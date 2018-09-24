@@ -1,0 +1,231 @@
+package no.cmarker.PokemonRestApi
+
+import io.restassured.RestAssured
+import io.restassured.RestAssured.given
+import io.restassured.http.ContentType
+import junit.framework.Assert.assertEquals
+import no.cmarker.PokemonRestApi.dto.PokemonDto
+import org.hamcrest.CoreMatchers
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.junit4.SpringRunner
+
+class PokemonRestApiTest : TestBase() {
+	
+	@Test
+	fun testCleanDB() {
+		
+		val response = RestAssured.given().get().then()
+				.statusCode(200)
+				.body("size()", CoreMatchers.equalTo(0))
+				.and().extract().response()
+		
+		println(response.asString())
+		
+	}
+	
+	@Test
+	fun createAndGetById() {
+		
+		assertResultSize(0)
+		
+		val number = 99
+		val name = "Owly"
+		val type = "Grass"
+		
+		val id1 = createPokemon(number, name, type)
+		
+		assertResultSize(1)
+		
+		given().param("id", id1)
+				.get()
+				.then()
+				.statusCode(200)
+				.body("id", CoreMatchers.equalTo(id1.toInt()))
+				.body("name", CoreMatchers.equalTo(name))
+				.body("type", CoreMatchers.equalTo(type))
+				.body("number", CoreMatchers.equalTo(number))
+	}
+	
+	@Test
+	fun getAllByTypeTest() {
+		
+		assertResultSize(0)
+		
+		val number = 99
+		val name = "Owly"
+		val type = "Grass"
+		
+		val id1 = createPokemon(number, name, type)
+		
+		assertResultSize(1)
+		
+		given().param("type", "Grass")
+				.get()
+				.then()
+				.statusCode(200)
+				.body("size()", CoreMatchers.equalTo(1))
+		
+		given().param("type", "Water")
+				.get()
+				.then()
+				.statusCode(200)
+				.body("size()", CoreMatchers.equalTo(0))
+	}
+	
+	@Test
+	fun deleteEntityTest() {
+		
+		assertResultSize(0)
+		
+		val number1 = 98
+		val number2 = 99
+		val name = "Owly"
+		val type = "Grass"
+		
+		val id1 = createPokemon(number1, name, type)
+		val id2 = createPokemon(number2, name, type)
+		
+		assertResultSize(2)
+		
+		//deleting id1
+		val resCode = given().param("id", id1).delete().then().extract().statusCode()
+		
+		// asserting
+		given().get().then().body("id", CoreMatchers.not(CoreMatchers.containsString("" + id1)))
+		assertResultSize(1)
+		assertEquals(204, resCode)
+	}
+	
+	@Test
+	fun putPokemonTest() {
+		
+		assertResultSize(0)
+		
+		val number = 98
+		val name = "Owly"
+		val type = "Grass"
+		
+		val id = createPokemon(number, name, type)
+		
+		assertResultSize(1)
+		
+		val updatedName = "UpdatedName"
+		val updatedNumber = 99
+		val updatedType = "UpdatedType"
+		
+		// The id is not a Long, the code will fail at
+		// Expected error code: 500
+		val res = given()
+				.contentType(ContentType.JSON)
+				.pathParam("id", id)
+				.body(PokemonDto(id, updatedNumber, updatedName, updatedType))
+				.put("/id/{id}")
+				.then()
+				.extract()
+		
+		assertEquals(204, res.statusCode())
+		
+	}
+	
+	@Test
+	fun putPokemonFailTest() {
+		
+		assertResultSize(0)
+		
+		val number = 98
+		val name = "Owly"
+		val type = "Grass"
+		
+		val id = createPokemon(number, name, type)
+		
+		assertResultSize(1)
+		
+		val updatedName = "UpdatedName"
+		val updatedNumber = 99
+		val updatedType = "UpdatedType"
+		
+		// The id in param doesn't match the id in the req. body
+		// Expected error code: 409
+		val res1 = given()
+				.contentType(ContentType.JSON)
+				.pathParam("id", id)
+				.body(PokemonDto(999, updatedNumber, updatedName, updatedType))
+				.put("/id/{id}")
+				.then()
+				.extract()
+		
+		assertEquals(409, res1.statusCode())
+		
+		/*
+		// THIS IS NOT POSSIBLE AT THIS MOMENT BECAUSE THE ID IS A LONG!
+		// IF ANDREA CHANGES THE ID TO A STRING. THEN THIS WILL WORK
+		val reqBody: JSONObject = JSONObject()
+				.put("id", id)
+				.put("name", updatedName)
+				.put("updatedNumber", updatedNumber)
+				.put("type", updatedType)
+		
+		
+		// The id is not a Long
+		// Expected error code: 404
+		val res2 = given()
+				.contentType(ContentType.JSON)
+				.pathParam("id", id)
+				.body(reqBody.toString())
+				.put("/id/{id}")
+				.then()
+				.extract()
+		
+		assertEquals(204, res2.statusCode())
+		
+		println(res2.statusCode())
+		*/
+	}
+	
+	@Test
+	fun patchPokemonTest() {
+		
+		assertResultSize(0)
+		
+		val number = 98
+		val name = "Owly"
+		val type = "Grass"
+		
+		val id = createPokemon(number, name, type)
+		
+		assertResultSize(1)
+		
+		val updatedNumber = 222
+		
+		given().contentType("application/merge-patch+json")
+				.pathParam("id", id)
+				.body("{'number': $updatedNumber}")
+				.then()
+				.statusCode(204)
+				.body("number", CoreMatchers.equalTo(updatedNumber))
+	}
+	
+	
+	/*
+		HELPING METHODS!
+	 */
+	
+	fun createPokemon(number: Int, name: String, type: String): Long {
+		
+		val dto = PokemonDto(null, number, name, type)
+		
+		return given().contentType(ContentType.JSON)
+				.body(dto)        // send the DTO as POST req body
+				.post()
+				.then()
+				.statusCode(201)
+				.extract().asString().toLong()
+	}
+	
+	fun assertResultSize(size: Int){
+		given().get().then().statusCode(200).body("size()", CoreMatchers.equalTo(size))
+	}
+	
+}
