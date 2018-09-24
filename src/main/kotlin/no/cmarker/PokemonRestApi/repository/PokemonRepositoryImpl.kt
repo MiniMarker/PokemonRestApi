@@ -17,9 +17,9 @@ class PokemonRepositoryImpl : PokemonRepositoryCustom {
 	@Autowired
 	private lateinit var em: EntityManager
 	
-	override fun createPokemon(number: Int, name: String, type: String): Long {
+	override fun createPokemon(number: Int, name: String, type: String, imgUrl: String): Long {
 		
-		val entity = PokemonEntity(number, name, type)
+		val entity = PokemonEntity(imgUrl, number, name, type)
 		em.persist(entity)
 		return entity.id!!
 		
@@ -43,10 +43,7 @@ class PokemonRepositoryImpl : PokemonRepositoryCustom {
 		return true
 	}
 	
-	override fun updatePokemon(id: Long,
-							   name: String,
-							   type: String,
-							   number: Int) : Boolean {
+	override fun updatePokemon(id: Long, name: String, type: String, number: Int, imgUrl: String) : Boolean {
 		
 		val pokemon = em.find(PokemonEntity::class.java, id) ?: return false
 		

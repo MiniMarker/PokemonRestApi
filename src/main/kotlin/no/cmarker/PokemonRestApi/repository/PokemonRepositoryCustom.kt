@@ -9,9 +9,9 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface PokemonRepositoryCustom {
 	
-	fun createPokemon(number: Int, name: String, type: String): Long
+	fun createPokemon(number: Int, name: String, type: String, imgUrl: String): Long
 	
-	fun updatePokemon(id: Long, name: String, type: String, number: Int): Boolean
+	fun updatePokemon(id: Long, name: String, type: String, number: Int, imgUrl: String): Boolean
 	
 	fun updateName(id: Long, name: String): Boolean
 	

@@ -17,6 +17,9 @@ data class PokemonDto(
 		var name: String? = null,
 		
 		@ApiModelProperty("The type of pokemon")
-		var type: String? = null
+		var type: String? = null,
+		
+		@ApiModelProperty("The imgUrl of the pokemon")
+		var imgUrl: String? = null
 
 )

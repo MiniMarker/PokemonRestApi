@@ -15,7 +15,8 @@ class PokemonConverter {
 					id = entity.id,
 					number = entity.number,
 					name = entity.name,
-					type = entity.type
+					type = entity.type,
+					imgUrl = entity.imgUrl
 			)
 			
 		}

@@ -108,7 +108,7 @@ class PokemonRestApi {
 		}
 		
 		try {
-			id = crud.createPokemon(dto.number!!, dto.name!!, dto.type!!)
+			id = crud.createPokemon(dto.number!!, dto.name!!, dto.type!!, dto.imgUrl!!)
 			
 		} catch (e: Exception) {
 			
@@ -197,7 +197,7 @@ class PokemonRestApi {
 		try {
 			
 			println("ALL OK! READY TO CHANGE THE ENTITY")
-			crud.updatePokemon(id, updatedPokemonDto.name!!, updatedPokemonDto.type!!, updatedPokemonDto.number!!)
+			crud.updatePokemon(id, updatedPokemonDto.name!!, updatedPokemonDto.type!!, updatedPokemonDto.number!!, updatedPokemonDto.imgUrl!!)
 			
 		} catch (e: ConstraintViolationException) {
 			return ResponseEntity.status(400).build()
@@ -337,5 +337,3 @@ class PokemonRestApi {
 	}
 	
 }
-
-// TRIGGER TESTS AND SHIIIIIIIT!
