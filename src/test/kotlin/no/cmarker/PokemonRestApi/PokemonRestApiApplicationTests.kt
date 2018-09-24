@@ -7,9 +7,6 @@ import junit.framework.Assert.assertEquals
 import no.cmarker.PokemonRestApi.dto.PokemonDto
 import org.hamcrest.CoreMatchers
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
 
 class PokemonRestApiTest : TestBase() {
 	
@@ -33,8 +30,9 @@ class PokemonRestApiTest : TestBase() {
 		val number = 99
 		val name = "Owly"
 		val type = "Grass"
+		val imgUrl = "defaultUrl"
 		
-		val id1 = createPokemon(number, name, type)
+		val id1 = createPokemon(number, name, type, imgUrl)
 		
 		assertResultSize(1)
 		
@@ -46,6 +44,7 @@ class PokemonRestApiTest : TestBase() {
 				.body("name", CoreMatchers.equalTo(name))
 				.body("type", CoreMatchers.equalTo(type))
 				.body("number", CoreMatchers.equalTo(number))
+				.body("imgUrl", CoreMatchers.equalTo(imgUrl))
 	}
 	
 	@Test
@@ -56,8 +55,9 @@ class PokemonRestApiTest : TestBase() {
 		val number = 99
 		val name = "Owly"
 		val type = "Grass"
+		val imgUrl = "defaultUrl"
 		
-		val id1 = createPokemon(number, name, type)
+		val id1 = createPokemon(number, name, type, imgUrl)
 		
 		assertResultSize(1)
 		
@@ -83,9 +83,10 @@ class PokemonRestApiTest : TestBase() {
 		val number2 = 99
 		val name = "Owly"
 		val type = "Grass"
+		val imgUrl = "defaultUrl"
 		
-		val id1 = createPokemon(number1, name, type)
-		val id2 = createPokemon(number2, name, type)
+		val id1 = createPokemon(number1, name, type, imgUrl)
+		val id2 = createPokemon(number2, name, type, imgUrl)
 		
 		assertResultSize(2)
 		
@@ -106,21 +107,23 @@ class PokemonRestApiTest : TestBase() {
 		val number = 98
 		val name = "Owly"
 		val type = "Grass"
+		val imgUrl = "defaultUrl"
 		
-		val id = createPokemon(number, name, type)
+		val id = createPokemon(number, name, type, imgUrl)
 		
 		assertResultSize(1)
 		
 		val updatedName = "UpdatedName"
 		val updatedNumber = 99
 		val updatedType = "UpdatedType"
+		val updatedImgUrl = "UpdatedUrl"
 		
 		// The id is not a Long, the code will fail at
 		// Expected error code: 500
 		val res = given()
 				.contentType(ContentType.JSON)
 				.pathParam("id", id)
-				.body(PokemonDto(id, updatedNumber, updatedName, updatedType))
+				.body(PokemonDto(id, updatedNumber, updatedName, updatedType, updatedImgUrl))
 				.put("/id/{id}")
 				.then()
 				.extract()
@@ -137,21 +140,23 @@ class PokemonRestApiTest : TestBase() {
 		val number = 98
 		val name = "Owly"
 		val type = "Grass"
+		val imgUrl = "defaultUrl"
 		
-		val id = createPokemon(number, name, type)
+		val id = createPokemon(number, name, type, imgUrl)
 		
 		assertResultSize(1)
 		
 		val updatedName = "UpdatedName"
 		val updatedNumber = 99
 		val updatedType = "UpdatedType"
+		val updatedImgUrl = "UpdatedUrl"
 		
 		// The id in param doesn't match the id in the req. body
 		// Expected error code: 409
 		val res1 = given()
 				.contentType(ContentType.JSON)
 				.pathParam("id", id)
-				.body(PokemonDto(999, updatedNumber, updatedName, updatedType))
+				.body(PokemonDto(99, updatedNumber, updatedName, updatedType, imgUrl))
 				.put("/id/{id}")
 				.then()
 				.extract()
@@ -192,8 +197,9 @@ class PokemonRestApiTest : TestBase() {
 		val number = 98
 		val name = "Owly"
 		val type = "Grass"
+		val imgUrl = "defaultUrl"
 		
-		val id = createPokemon(number, name, type)
+		val id = createPokemon(number, name, type, imgUrl)
 		
 		assertResultSize(1)
 		
@@ -212,9 +218,9 @@ class PokemonRestApiTest : TestBase() {
 		HELPING METHODS!
 	 */
 	
-	fun createPokemon(number: Int, name: String, type: String): Long {
+	fun createPokemon(number: Int, name: String, type: String, imgUrl: String): Long {
 		
-		val dto = PokemonDto(null, number, name, type)
+		val dto = PokemonDto(null, number, name, type, imgUrl)
 		
 		return given().contentType(ContentType.JSON)
 				.body(dto)        // send the DTO as POST req body
