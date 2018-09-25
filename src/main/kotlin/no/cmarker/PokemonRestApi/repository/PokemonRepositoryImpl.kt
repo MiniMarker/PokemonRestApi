@@ -50,6 +50,7 @@ class PokemonRepositoryImpl : PokemonRepositoryCustom {
 		pokemon.name = name
 		pokemon.type = type
 		pokemon.number = number
+		pokemon.imgUrl = imgUrl
 		
 		return true
 	}

@@ -103,7 +103,7 @@ class PokemonRestApi {
 		}
 		val id: Long?
 		
-		if (dto.name == null || dto.number == null || dto.type == null) {
+		if (dto.name == null || dto.number == null || dto.type == null || dto.imgUrl == null) {
 			return ResponseEntity.status(400).build()
 		}
 		
