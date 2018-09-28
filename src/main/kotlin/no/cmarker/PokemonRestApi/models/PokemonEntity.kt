@@ -12,7 +12,7 @@ import javax.validation.constraints.Size
 /**
  * @author Christian Marker on 24/09/2018 at 11:02.
  */
-@Entity(name = "pokemons")
+@Entity(name = "pokemons_test")
 class PokemonEntity (
 		
 		@get:NotBlank
@@ -33,5 +33,4 @@ class PokemonEntity (
 		@get:Id
 		@get:GeneratedValue(strategy = GenerationType.IDENTITY)
 		var id: Long? = null
-
 )

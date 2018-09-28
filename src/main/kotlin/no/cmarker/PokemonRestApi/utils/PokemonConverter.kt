@@ -1,5 +1,6 @@
-package no.cmarker.PokemonRestApi.dto
+package no.cmarker.PokemonRestApi.utils
 
+import no.cmarker.PokemonRestApi.dto.PokemonDto
 import no.cmarker.PokemonRestApi.models.PokemonEntity
 
 /**

@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.base.Throwables
 import io.swagger.annotations.*
-import no.cmarker.PokemonRestApi.dto.PokemonConverter
+import no.cmarker.PokemonRestApi.utils.PokemonConverter
 import no.cmarker.PokemonRestApi.dto.PokemonDto
+import no.cmarker.PokemonRestApi.dto.ResponseDto
+import no.cmarker.PokemonRestApi.utils.WrappedResponse
 import no.cmarker.PokemonRestApi.repository.PokemonRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -44,12 +46,21 @@ class PokemonRestApi {
 			@ApiParam("Type of the pokemons")
 			@RequestParam("type", required = false)
 			paramType: String?
-	): ResponseEntity<Any> {
+	): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
 		// If no params are defined, return all data in database
 		if (paramId.isNullOrBlank() && paramType.isNullOrBlank()) {
 			
-			return ResponseEntity.ok(PokemonConverter.transform(crud.findAll()))
+			//return ResponseEntity.ok(PokemonConverter.transform(crud.findAll()))
+			
+			print(PokemonConverter.transform(crud.findAll()))
+			
+			return ResponseEntity.status(200).body(
+					ResponseDto(
+							code = 200,
+							data = PokemonConverter.transform(crud.findAll()))
+							.validated()
+			)
 			
 		}
 		
@@ -71,14 +82,27 @@ class PokemonRestApi {
 			// Getting entity from DB
 			val entity = crud.findById(id).orElse(null) ?: return ResponseEntity.status(404).build()
 			
-			return ResponseEntity.ok(PokemonConverter.transform(entity))
+			//return ResponseEntity.ok(PokemonConverter.transform(entity))
+			
+			return ResponseEntity.status(200).body(
+					ResponseDto(
+							code = 200,
+							data = listOf(PokemonConverter.transform(entity))
+					).validated()
+			)
 			
 		}
 		
 		// Else If only paramType is defined, return all pokemon in that type
 		else {
-			return ResponseEntity.ok(PokemonConverter.transform(crud.findAllByType(paramType!!)))
+			//return ResponseEntity.ok(PokemonConverter.transform(crud.findAllByType(paramType!!)))
 			
+			return ResponseEntity.status(200).body(
+					ResponseDto(
+							code = 200,
+							data = PokemonConverter.transform(crud.findAllByType(paramType!!))
+					).validated()
+			)
 		}
 		
 	}

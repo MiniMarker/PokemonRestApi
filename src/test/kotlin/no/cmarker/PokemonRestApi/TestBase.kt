@@ -3,6 +3,7 @@ package no.cmarker.PokemonRestApi
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
 import no.cmarker.PokemonRestApi.dto.PokemonDto
+import no.cmarker.PokemonRestApi.dto.ResponseDto
 import org.hamcrest.CoreMatchers
 import org.junit.After
 import org.junit.Before
@@ -39,10 +40,11 @@ abstract class TestBase {
 				.then()
 				.statusCode(200)
 				.extract()
-				.`as`(Array<PokemonDto>::class.java) //need to escape the as keyword!
-				.toList()
+				//.`as`(Array<PokemonDto>::class.java) //need to escape the as keyword!
+				.`as`(ResponseDto::class.java)
+				//.toList()
 		
-		list.stream().forEach {
+		list.data!!.stream().forEach {
 			RestAssured.given()
 					.param("id", it.id)
 					.delete()
@@ -54,6 +56,6 @@ abstract class TestBase {
 				.get()
 				.then()
 				.statusCode(200)
-				.body("size()", CoreMatchers.equalTo(0))
+				.body("data.size()", CoreMatchers.equalTo(0))
 	}
 }

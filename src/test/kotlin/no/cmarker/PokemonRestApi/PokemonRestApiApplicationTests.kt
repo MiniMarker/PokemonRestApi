@@ -5,6 +5,7 @@ import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
 import junit.framework.Assert.assertEquals
 import no.cmarker.PokemonRestApi.dto.PokemonDto
+import no.cmarker.PokemonRestApi.dto.ResponseDto
 import org.hamcrest.CoreMatchers
 import org.junit.Test
 
@@ -15,7 +16,7 @@ class PokemonRestApiTest : TestBase() {
 		
 		val response = RestAssured.given().get().then()
 				.statusCode(200)
-				.body("size()", CoreMatchers.equalTo(0))
+				.body("data.size()", CoreMatchers.equalTo(0))
 				.and().extract().response()
 		
 		println(response.asString())
@@ -36,15 +37,23 @@ class PokemonRestApiTest : TestBase() {
 		
 		assertResultSize(1)
 		
-		given().param("id", id1)
+		val resultList = given().param("id", id1)
 				.get()
 				.then()
 				.statusCode(200)
-				.body("id", CoreMatchers.equalTo(id1.toInt()))
-				.body("name", CoreMatchers.equalTo(name))
-				.body("type", CoreMatchers.equalTo(type))
-				.body("number", CoreMatchers.equalTo(number))
-				.body("imgUrl", CoreMatchers.equalTo(imgUrl))
+				.extract()
+				.`as`(ResponseDto::class.java).data!!
+				//.body("data.id", CoreMatchers.equalTo(id1.toInt()))
+				//.body("data.name", CoreMatchers.equalTo(name))
+				//.body("data.type", CoreMatchers.equalTo(type))
+				//.body("data.number", CoreMatchers.equalTo(number))
+				//.body("data.imgUrl", CoreMatchers.equalTo(imgUrl))
+		
+		assertEquals(id1, resultList.get(0).id)
+		assertEquals(name, resultList.get(0).name)
+		assertEquals(type, resultList.get(0).type)
+		assertEquals(imgUrl, resultList.get(0).imgUrl)
+		
 	}
 	
 	@Test
@@ -65,13 +74,13 @@ class PokemonRestApiTest : TestBase() {
 				.get()
 				.then()
 				.statusCode(200)
-				.body("size()", CoreMatchers.equalTo(1))
+				.body("data.size()", CoreMatchers.equalTo(1))
 		
 		given().param("type", "Water")
 				.get()
 				.then()
 				.statusCode(200)
-				.body("size()", CoreMatchers.equalTo(0))
+				.body("data.size()", CoreMatchers.equalTo(0))
 	}
 	
 	@Test
@@ -231,7 +240,7 @@ class PokemonRestApiTest : TestBase() {
 	}
 	
 	fun assertResultSize(size: Int){
-		given().get().then().statusCode(200).body("size()", CoreMatchers.equalTo(size))
+		given().get().then().statusCode(200).body("data.size()", CoreMatchers.equalTo(size))
 	}
 	
 }
