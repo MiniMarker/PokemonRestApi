@@ -1,6 +1,7 @@
 package no.cmarker.PokemonRestApi.utils
 
 import io.swagger.annotations.ApiModelProperty
+import no.cmarker.PokemonRestApi.dto.PageDto
 import no.cmarker.PokemonRestApi.dto.PokemonDto
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
@@ -14,7 +15,7 @@ open class WrappedResponse<T>(
 		var code: Int? = null,
 		
 		@ApiModelProperty("The wrapped data-payload")
-		var data: List<PokemonDto>? = null,
+		var page: PageDto<PokemonDto>? = null,
 		
 		@ApiModelProperty("Error message in case of there was an error in the request")
 		var message: String? = null,
@@ -39,8 +40,8 @@ open class WrappedResponse<T>(
 		if (status == null) {
 			status = when (c) {
 				in 100..399 -> ResponseStatus.SUCCESS        // All OK
-				in 400..499 -> ResponseStatus.ERROR            // User error
-				in 500..599 -> ResponseStatus.FAIL            // Server error
+				in 400..499 -> ResponseStatus.ERROR          // User error
+				in 500..599 -> ResponseStatus.FAIL           // Server error
 				else -> throw IllegalStateException("invalid HTTP-code: $code")
 			}
 			
@@ -63,8 +64,4 @@ open class WrappedResponse<T>(
 		//returning the Wrapped response
 		return this
 	}
-}
-
-enum class ResponseStatus {
-	SUCCESS, FAIL, ERROR
 }

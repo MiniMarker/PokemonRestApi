@@ -43,7 +43,7 @@ abstract class TestBase {
 				//.`as`(Array<PokemonDto>::class.java) //need to escape the as keyword!
 				.`as`(ResponseDto::class.java)
 				//.toList()
-		
+		/*
 		list.data!!.stream().forEach {
 			RestAssured.given()
 					.param("id", it.id)
@@ -51,6 +51,7 @@ abstract class TestBase {
 					.then()
 					.statusCode(204)
 		}
+		*/
 		
 		RestAssured.given()
 				.get()

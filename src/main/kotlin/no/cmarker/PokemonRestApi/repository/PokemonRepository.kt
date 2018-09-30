@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface PokemonRepository : CrudRepository<PokemonEntity, Long>, PokemonRepositoryCustom {
 	
-	fun findAllByType(type: String): Iterable<PokemonEntity>
+	fun findAllByType(type: String): List<PokemonEntity>
 }

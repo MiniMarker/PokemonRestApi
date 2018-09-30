@@ -8,7 +8,7 @@ import no.cmarker.PokemonRestApi.utils.WrappedResponse
  */
 class ResponseDto (
 		code: Int? = null,
-		data: List<PokemonDto> = listOf(),
+		page: PageDto<PokemonDto>? = null,
 		message: String? = null,
 		status: ResponseStatus? = null
-) : WrappedResponse<PokemonDto>(code, data, message, status)
+) : WrappedResponse<PokemonDto>(code, page, message, status)
