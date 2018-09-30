@@ -1,14 +1,14 @@
 language: java
-
 jdk:
 - oraclejdk8
-
 script: HEROKU_API_KEY="$HEROKU_API_KEY" mvn clean verify -Pheroku
-
 notifications:
   email:
     recipients:
     - cfmarker@gmail.com
-    on_success: change # default: change
-    on_failure: always # default: always
-
+    on_success: never
+    on_failure: never
+  slack:
+    secure: gO47J/vnn4wVu9RIT2H4O3vZertgLcf60s/g/n5FJjyToKm5kDzWwQsj6cD92st1fV95fpmicLnhxSKWnJSlzK65yVo1Y/kHAX0X780hFJKacAlOu3FJKE7HYibCfjew/Xi279x6NOvt3VW3UpMBPFXUD5sp6/ABOk3YPK+fjrX0aurB9LzTQlx8Q7DeJnszBeS3SGhCt2viWVO9qZhAgefSjbSeOEp9GrkMzVBvvQTLHu9IcUwneU3eThEHkrU+ycsXufCpT75w9uEZQlQ8+FMgnccurvOnGBG3ZgOPSR5cCIo5jyW7IpjlbW0nPvqVSduy+miErBPXvj4Fqn+nPdqjXtz0w9KVplPFuG9BQUP/qclXhaH8lNcYm6LhngDQFdtBy0WW9gBsBFLub5TTK+xnzD0nSR9y3tOlYSuBRRW322jG0Y5/NKP58kPRKjlg438MlCg8J1bHzr4nPu1q43cO4WQhSxnwFceKciuKZWhQ94YQdMDFDB2dCREDXUY4udDqtKAEOhveehMSTfbejH4xVqbLQSS3JcCCHUnDISrCOUzsTzrF2vzgv43XXhv8/qagCqJ64N8gCPqlEPbu1CkpUWF4fTaBzmo8hdfmJ3rWa7wCK/Sv9KvvkJqQPHOVmsYhyl174BAh+c+y7hCZQ3lnNqAARG31ec7i1Hpf7PY=
+    on_success: change
+    on_failure: always
