@@ -16,7 +16,7 @@ class PokemonRestApiTest : TestBase() {
 		
 		val response = RestAssured.given().get().then()
 				.statusCode(200)
-				.body("page.data.size()", CoreMatchers.equalTo(1))
+				.body("page.data.size()", CoreMatchers.equalTo(0))
 				.and().extract().response()
 		
 		println(response.asString())
