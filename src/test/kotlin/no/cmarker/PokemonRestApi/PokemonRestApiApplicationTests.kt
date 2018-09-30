@@ -16,7 +16,7 @@ class PokemonRestApiTest : TestBase() {
 		
 		val response = RestAssured.given().get().then()
 				.statusCode(200)
-				.body("data.size()", CoreMatchers.equalTo(0))
+				.body("page.data.size()", CoreMatchers.equalTo(0))
 				.and().extract().response()
 		
 		println(response.asString())
@@ -41,18 +41,23 @@ class PokemonRestApiTest : TestBase() {
 				.get()
 				.then()
 				.statusCode(200)
-				.extract()
-				.`as`(ResponseDto::class.java).page!!
-				//.body("data.id", CoreMatchers.equalTo(id1.toInt()))
-				//.body("data.name", CoreMatchers.equalTo(name))
-				//.body("data.type", CoreMatchers.equalTo(type))
-				//.body("data.number", CoreMatchers.equalTo(number))
-				//.body("data.imgUrl", CoreMatchers.equalTo(imgUrl))
+				.extract().jsonPath().getMap<String, Any>("page.data[0]")
 		
-		//assertEquals(id1, resultList.get(0).id)
-		//assertEquals(name, resultList.get(0).name)
-		//assertEquals(type, resultList.get(0).type)
-		//assertEquals(imgUrl, resultList.get(0).imgUrl)
+		//assertEquals(resultList["id"], id1)
+		assertEquals(resultList["name"], name)
+		assertEquals(resultList["type"], type)
+		assertEquals(resultList["imgUrl"], imgUrl)
+		
+		//println(resultList)
+	}
+	
+	@Test
+	fun createMultipleTest(){
+		
+		
+		createMultiple(8)
+		
+		assertResultSize(8)
 		
 	}
 	
@@ -66,7 +71,7 @@ class PokemonRestApiTest : TestBase() {
 		val type = "Grass"
 		val imgUrl = "defaultUrl"
 		
-		val id1 = createPokemon(number, name, type, imgUrl)
+		createPokemon(number, name, type, imgUrl)
 		
 		assertResultSize(1)
 		
@@ -74,13 +79,13 @@ class PokemonRestApiTest : TestBase() {
 				.get()
 				.then()
 				.statusCode(200)
-				.body("data.size()", CoreMatchers.equalTo(1))
+				.body("page.data.size()", CoreMatchers.equalTo(1))
 		
 		given().param("type", "Water")
 				.get()
 				.then()
 				.statusCode(200)
-				.body("data.size()", CoreMatchers.equalTo(0))
+				.body("page.data.size()", CoreMatchers.equalTo(0))
 	}
 	
 	@Test
@@ -95,7 +100,7 @@ class PokemonRestApiTest : TestBase() {
 		val imgUrl = "defaultUrl"
 		
 		val id1 = createPokemon(number1, name, type, imgUrl)
-		val id2 = createPokemon(number2, name, type, imgUrl)
+		createPokemon(number2, name, type, imgUrl)
 		
 		assertResultSize(2)
 		
@@ -103,7 +108,7 @@ class PokemonRestApiTest : TestBase() {
 		val resCode = given().param("id", id1).delete().then().extract().statusCode()
 		
 		// asserting
-		given().get().then().body("id", CoreMatchers.not(CoreMatchers.containsString("" + id1)))
+		given().get().then().body("page.data.id", CoreMatchers.not(CoreMatchers.containsString("" + id1)))
 		assertResultSize(1)
 		assertEquals(204, resCode)
 	}
@@ -236,11 +241,26 @@ class PokemonRestApiTest : TestBase() {
 				.post()
 				.then()
 				.statusCode(201)
-				.extract().asString().toLong()
+				.extract()
+				.jsonPath().getLong("message")
+	}
+	
+	fun createMultiple(n: Int) {
+		
+		val name = "defaultName"
+		val type = "defaultType"
+		val imgUrl = "defaultUrl"
+		
+		for (i in 1..n) {
+			createPokemon(i, name, type, imgUrl)
+		}
+		
+		given().get().then().extract().body().jsonPath().prettyPrint();
+		
 	}
 	
 	fun assertResultSize(size: Int){
-		given().get().then().statusCode(200).body("data.size()", CoreMatchers.equalTo(size))
+		given().get().then().statusCode(200).body("page.data.size()", CoreMatchers.equalTo(size))
 	}
 	
 }

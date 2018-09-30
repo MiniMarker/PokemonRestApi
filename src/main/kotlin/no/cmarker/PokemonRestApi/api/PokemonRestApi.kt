@@ -33,10 +33,8 @@ import javax.validation.ConstraintViolationException
 @RestController
 class PokemonRestApi {
 	
-	
-	
 	@Autowired
-	private lateinit var crud: PokemonRepository
+	private lateinit var service: PokemonRepository
 	
 	/*
 		GET
@@ -79,7 +77,7 @@ class PokemonRestApi {
 		// If no params are defined, return all data in database
 		if (paramId.isNullOrBlank() && paramType.isNullOrBlank()) {
 			
-			pokemonResultList = DtoConverters.transform(crud.findAll())
+			pokemonResultList = DtoConverters.transform(service.findAll())
 			
 		}
 		
@@ -102,7 +100,7 @@ class PokemonRestApi {
 			}
 			
 			// Getting entity from DB
-			val entity = crud.findById(id).orElse(null)
+			val entity = service.findById(id).orElse(null)
 					?: return ResponseEntity.status(404).body(
 							ResponseDto(
 									code = 404,
@@ -119,7 +117,7 @@ class PokemonRestApi {
 		// Else If only paramType is defined, return all pokemon in that type
 		else {
 			
-			pokemonResultList = DtoConverters.transform(crud.findAllByType(paramType!!))
+			pokemonResultList = DtoConverters.transform(service.findAllByType(paramType!!))
 			
 			builder.queryParam("type", paramType)
 		}
@@ -204,7 +202,7 @@ class PokemonRestApi {
 		}
 		
 		try {
-			id = crud.createPokemon(dto.number!!, dto.name!!, dto.type!!, dto.imgUrl!!)
+			id = service.createPokemon(dto.number!!, dto.name!!, dto.type!!, dto.imgUrl!!)
 			
 		} catch (e: Exception) {
 			
@@ -218,10 +216,11 @@ class PokemonRestApi {
 			}
 			throw e
 		}
+		
 		return ResponseEntity.status(201).body(
 				ResponseDto(
 						code = 201,
-						message = "Pokemon with id: $id successfully created"
+						message = "" + id
 				).validated()
 		)
 		
@@ -255,7 +254,7 @@ class PokemonRestApi {
 		}
 		
 		//if the given is is not registred in the DB
-		if (!crud.existsById(id)) {
+		if (!service.existsById(id)) {
 			return ResponseEntity.status(404).body(
 					ResponseDto(
 							code = 404,
@@ -264,7 +263,7 @@ class PokemonRestApi {
 			)
 		}
 		
-		crud.deleteById(id)
+		service.deleteById(id)
 		return ResponseEntity.status(204).body(
 				ResponseDto(
 						code = 204,
@@ -317,7 +316,7 @@ class PokemonRestApi {
 			)
 		}
 		
-		if (!crud.existsById(id)) {
+		if (!service.existsById(id)) {
 			
 			// return 404 (Not found)
 			return ResponseEntity.status(404).body(
@@ -331,7 +330,7 @@ class PokemonRestApi {
 		try {
 			
 			println("ALL OK! READY TO CHANGE THE ENTITY")
-			crud.updatePokemon(id, updatedPokemonDto.name!!, updatedPokemonDto.type!!, updatedPokemonDto.number!!, updatedPokemonDto.imgUrl!!)
+			service.updatePokemon(id, updatedPokemonDto.name!!, updatedPokemonDto.type!!, updatedPokemonDto.number!!, updatedPokemonDto.imgUrl!!)
 			
 		} catch (e: ConstraintViolationException) {
 			return ResponseEntity.status(400).body(
@@ -382,7 +381,7 @@ class PokemonRestApi {
 			)
 		}
 		
-		if (!crud.existsById(id)) {
+		if (!service.existsById(id)) {
 			
 			// return 404 (Not found)
 			return ResponseEntity.status(404).body(
@@ -441,7 +440,7 @@ class PokemonRestApi {
 				)
 			}
 			
-			crud.updateNumber(id, newNumber)
+			service.updateNumber(id, newNumber)
 			
 		}
 		return ResponseEntity.status(204).body(

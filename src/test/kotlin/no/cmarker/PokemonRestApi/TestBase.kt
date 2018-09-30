@@ -40,23 +40,21 @@ abstract class TestBase {
 				.then()
 				.statusCode(200)
 				.extract()
-				//.`as`(Array<PokemonDto>::class.java) //need to escape the as keyword!
 				.`as`(ResponseDto::class.java)
-				//.toList()
-		/*
-		list.data!!.stream().forEach {
+				
+		
+		list.page!!.data.stream().forEach {
 			RestAssured.given()
 					.param("id", it.id)
 					.delete()
 					.then()
 					.statusCode(204)
 		}
-		*/
 		
 		RestAssured.given()
 				.get()
 				.then()
 				.statusCode(200)
-				.body("data.size()", CoreMatchers.equalTo(0))
+				.body("page.data.size()", CoreMatchers.equalTo(0))
 	}
 }
