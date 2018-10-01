@@ -34,3 +34,5 @@ class PokemonEntity (
 		@get:GeneratedValue(strategy = GenerationType.IDENTITY)
 		var id: Long? = null
 )
+
+// Make it run!
