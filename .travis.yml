@@ -15,7 +15,3 @@ notifications:
     - cfmarker@gmail.com
     on_success: never
     on_failure: never
-
-  slack: travisci-workspace:u5GmzpM6yaiGOcSgFpTp0hO6
-    on_success: change
-    on_failure: always
