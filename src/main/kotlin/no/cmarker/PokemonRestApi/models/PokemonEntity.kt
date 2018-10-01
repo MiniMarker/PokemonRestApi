@@ -12,7 +12,7 @@ import javax.validation.constraints.Size
 /**
  * @author Christian Marker on 24/09/2018 at 11:02.
  */
-@Entity(name = "pokemons_test")
+@Entity(name = "pokemons")
 class PokemonEntity (
 		
 		@get:NotBlank
