@@ -1,7 +1,13 @@
 language: java
+
 jdk:
 - oraclejdk8
-#script: HEROKU_API_KEY="$HEROKU_API_KEY" mvn clean verify -Pheroku
+
+branches:
+  only:
+  - master
+
+  #script: HEROKU_API_KEY="$HEROKU_API_KEY" mvn clean verify -Pheroku
 notifications:
   email:
     recipients:
