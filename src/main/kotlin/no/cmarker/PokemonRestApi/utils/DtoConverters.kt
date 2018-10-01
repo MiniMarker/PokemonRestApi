@@ -26,7 +26,7 @@ object DtoConverters {
 				data = dtoList,
 				rangeMin = offset,
 				rangeMax = offset + dtoList.size - 1,
-				totalSize = dtoList.size
+				totalSize = pokemonList.size
 		)
 		
 	}
