@@ -2,6 +2,7 @@ package no.cmarker.PokemonRestApi.repository
 
 import no.cmarker.PokemonRestApi.models.entity.PokemonEntity
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import javax.persistence.EntityManager
@@ -16,6 +17,9 @@ class PokemonRepositoryImpl : PokemonRepositoryCustom {
 	
 	@Autowired
 	private lateinit var em: EntityManager
+	
+	@Autowired
+	private lateinit var crudRepository: PokemonRepository
 	
 	override fun createPokemon(number: Int, name: String, type: String, imgUrl: String): Long {
 		

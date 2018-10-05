@@ -4,15 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.base.Throwables
 import io.swagger.annotations.*
-import no.cmarker.PokemonRestApi.utils.DtoConverters
 import no.cmarker.PokemonRestApi.models.dto.PokemonDto
 import no.cmarker.PokemonRestApi.models.dto.ResponseDto
-import no.cmarker.PokemonRestApi.models.hal.HalLink
 import no.cmarker.PokemonRestApi.models.WrappedResponse
 import no.cmarker.PokemonRestApi.models.dto.PageDto
 import no.cmarker.PokemonRestApi.repository.PokemonRepository
+import no.cmarker.PokemonRestApi.service.PokemonService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -37,7 +35,10 @@ import org.springframework.http.HttpStatus.*
 class PokemonRestApi {
 	
 	@Autowired
-	private lateinit var service: PokemonRepository
+	private lateinit var repository: PokemonRepository
+	
+	@Autowired
+	private lateinit var service: PokemonService;
 	
 	/*
 		GET
@@ -63,111 +64,8 @@ class PokemonRestApi {
 			limit: Int
 	): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
+		return service.get(paramId, paramType, offset, limit)
 		
-		if (offset < 0 || limit < 1) {
-			return ResponseEntity.status(400).body(
-					ResponseDto(
-							code = 400,
-							message = "Invalid offset or limit. Offset need to be a positive number, and limit need to be greater than 1."
-					).validated()
-			)
-		}
-		
-		val pokemonResultList: List<PokemonDto>
-		val builder = UriComponentsBuilder.fromPath("/pokemon")
-		
-		
-		// If no params are defined, return all data in database
-		if (paramId.isNullOrBlank() && paramType.isNullOrBlank()) {
-			
-			pokemonResultList = DtoConverters.transform(service.findAll())
-			
-		}
-		
-		// If only paramId is defined, the pokemon with that id
-		else if (!paramId.isNullOrBlank() && paramType.isNullOrBlank()) {
-			
-			val id = try {
-				// Here i try to parse the id given as String in the URL to a long value
-				paramId!!.toLong()
-				
-			} catch (e: Exception) {
-				
-				return ResponseEntity.status(NOT_FOUND).body(
-						ResponseDto(
-								code = NOT_FOUND.value(),
-								message = "Invalid id: $paramId"
-						).validated()
-				)
-				
-			}
-			
-			// Getting entity from DB
-			val entity = service.findById(id).orElse(null)
-					?: return ResponseEntity.status(404).body(
-							ResponseDto(
-									code = 404,
-									message = "could not find pokemon with ID: $id"
-							).validated()
-					)
-			
-			pokemonResultList = listOf(DtoConverters.transform(entity))
-			
-			builder.queryParam("id", id)
-			
-		}
-		
-		// Else If only paramType is defined, return all pokemon in that type
-		else {
-			
-			pokemonResultList = DtoConverters.transform(service.findAllByType(paramType!!))
-			
-			builder.queryParam("type", paramType)
-		}
-		
-		if (offset != 0 && offset >= pokemonResultList.size) {
-			
-			return ResponseEntity.status(400).body(
-					ResponseDto(
-							code = 400,
-							message = "Too large offset, size of result is ${pokemonResultList.size}"
-					).validated()
-			)
-			
-		}
-		
-		builder.queryParam("limit", limit)
-		
-		val dto = DtoConverters.transform(pokemonResultList, offset, limit)
-		
-		dto._self = HalLink(builder.cloneBuilder()
-				.queryParam("offset", offset)
-				.build().toString()
-		)
-		
-		if (!pokemonResultList.isEmpty() && offset > 0) {
-			
-			dto.prev = HalLink(builder.cloneBuilder()
-					.queryParam("offset", Math.max(offset - limit, 0))
-					.build().toString()
-			)
-		}
-		
-		if (offset + limit < pokemonResultList.size) {
-			
-			dto.next = HalLink(builder.cloneBuilder()
-					.queryParam("offset", offset + limit)
-					.build().toString()
-			)
-		}
-		
-		return ResponseEntity.status(200).body(
-				ResponseDto(
-						code = 200,
-						page = dto
-						
-				).validated()
-		)
 	}
 	
 	/*
@@ -181,52 +79,7 @@ class PokemonRestApi {
 					  @RequestBody
 					  dto: PokemonDto): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
-		/*
-			Error code 400: User error
-		*/
-		
-		if (dto.id != null) {
-			return ResponseEntity.status(400).body(
-					ResponseDto(
-							code = 400,
-							message = "id != null, you cannot create a pokemon with predefined id"
-					).validated()
-			)
-		}
-		val id: Long?
-		
-		if (dto.name == null || dto.number == null || dto.type == null || dto.imgUrl == null) {
-			return ResponseEntity.status(400).body(
-					ResponseDto(
-							code = 400,
-							message = "you need to spesify a name, number, type and imgUrl when creating a Pokemon"
-					).validated()
-			)
-		}
-		
-		try {
-			id = service.createPokemon(dto.number!!, dto.name!!, dto.type!!, dto.imgUrl!!)
-			
-		} catch (e: Exception) {
-			
-			if (Throwables.getRootCause(e) is ConstraintViolationException) {
-				return ResponseEntity.status(400).body(
-						ResponseDto(
-								code = 400,
-								message = "Error while creating a pokemon, contact sys-adm"
-						).validated()
-				)
-			}
-			throw e
-		}
-		
-		return ResponseEntity.status(201).body(
-				ResponseDto(
-						code = 201,
-						page = PageDto(data = listOf(PokemonDto(id = id))),
-						message = "Pokemon with id: $id created"
-				).validated()
-		)
+		return service.createPokemon(dto)
 		
 	}
 	
@@ -248,9 +101,9 @@ class PokemonRestApi {
 			id = paramId!!.toLong()
 			
 		} catch (e: Exception) {
-			return ResponseEntity.status(400).body(
+			return ResponseEntity.status(BAD_REQUEST).body(
 					ResponseDto(
-							code = 400,
+							code = BAD_REQUEST.value(),
 							message = "Invalid id: $paramId"
 					).validated()
 			)
@@ -258,19 +111,19 @@ class PokemonRestApi {
 		}
 		
 		//if the given is is not registred in the DB
-		if (!service.existsById(id)) {
-			return ResponseEntity.status(404).body(
+		if (!repository.existsById(id)) {
+			return ResponseEntity.status(NOT_FOUND).body(
 					ResponseDto(
-							code = 404,
+							code = NOT_FOUND.value(),
 							message = "Could not find pokemon with id: $id"
 					).validated()
 			)
 		}
 		
-		service.deleteById(id)
-		return ResponseEntity.status(204).body(
+		repository.deleteById(id)
+		return ResponseEntity.status(NO_CONTENT).body(
 				ResponseDto(
-						code = 204,
+						code = NO_CONTENT.value(),
 						message = "Pokemon with id: $id successfully deleted"
 				).validated()
 		)
@@ -301,9 +154,9 @@ class PokemonRestApi {
 			
 			// Invalid id, could not parse to long
 			// return 404 (Not found)
-			return ResponseEntity.status(404).body(
+			return ResponseEntity.status(NOT_FOUND).body(
 					ResponseDto(
-							code = 404,
+							code = NOT_FOUND.value(),
 							message = "Invalid id: $paramId"
 					).validated()
 			)
@@ -312,20 +165,20 @@ class PokemonRestApi {
 		if (updatedPokemonDto.id != paramId) {
 			
 			// return 409 (Conflict)
-			return ResponseEntity.status(409).body(
+			return ResponseEntity.status(CONFLICT).body(
 					ResponseDto(
-							code = 409,
+							code = CONFLICT.value(),
 							message = "The id given in the URL doesn't match the one in the JSON-obj sent as body"
 					).validated()
 			)
 		}
 		
-		if (!service.existsById(id)) {
+		if (!repository.existsById(id)) {
 			
 			// return 404 (Not found)
-			return ResponseEntity.status(404).body(
+			return ResponseEntity.status(NOT_FOUND).body(
 					ResponseDto(
-							code = 404,
+							code = NOT_FOUND.value(),
 							message = "Could not find pokemon with id: $id"
 					).validated()
 			)
@@ -334,20 +187,20 @@ class PokemonRestApi {
 		try {
 			
 			println("ALL OK! READY TO CHANGE THE ENTITY")
-			service.updatePokemon(id, updatedPokemonDto.name!!, updatedPokemonDto.type!!, updatedPokemonDto.number!!, updatedPokemonDto.imgUrl!!)
+			repository.updatePokemon(id, updatedPokemonDto.name!!, updatedPokemonDto.type!!, updatedPokemonDto.number!!, updatedPokemonDto.imgUrl!!)
 			
 		} catch (e: ConstraintViolationException) {
-			return ResponseEntity.status(400).body(
+			return ResponseEntity.status(BAD_REQUEST).body(
 					ResponseDto(
-							code = 404,
+							code = BAD_REQUEST.value(),
 							message = "Error while updating pokemon"
 					).validated()
 			)
 		}
 		
-		return ResponseEntity.status(204).body(
+		return ResponseEntity.status(NO_CONTENT).body(
 				ResponseDto(
-						code = 204,
+						code = NO_CONTENT.value(),
 						message = "Pokemon with id: $id successfully updated"
 				).validated()
 		)
@@ -377,20 +230,20 @@ class PokemonRestApi {
 			
 		} catch (e: Exception) {
 			
-			return ResponseEntity.status(404).body(
+			return ResponseEntity.status(NOT_FOUND).body(
 					ResponseDto(
-							code = 404,
+							code = NOT_FOUND.value(),
 							message = "Invalid id: $paramId"
 					).validated()
 			)
 		}
 		
-		if (!service.existsById(id)) {
+		if (!repository.existsById(id)) {
 			
 			// return 404 (Not found)
-			return ResponseEntity.status(404).body(
+			return ResponseEntity.status(NOT_FOUND).body(
 					ResponseDto(
-							code = 404,
+							code = NOT_FOUND.value(),
 							message = "Could not find pokemon with id: $id"
 					).validated()
 			)
@@ -404,9 +257,9 @@ class PokemonRestApi {
 		} catch (e: Exception) {
 			
 			//Invalid JSON data
-			return ResponseEntity.status(409).body(
+			return ResponseEntity.status(CONFLICT).body(
 					ResponseDto(
-							code = 404,
+							code = CONFLICT.value(),
 							message = "Invalid JSON data"
 					).validated()
 			)
@@ -417,9 +270,9 @@ class PokemonRestApi {
 		
 		// Updating the id is not allowed
 		if (jsonNode.has("id")) {
-			return ResponseEntity.status(400).body(
+			return ResponseEntity.status(BAD_REQUEST).body(
 					ResponseDto(
-							code = 400,
+							code = BAD_REQUEST.value(),
 							message = "Updating the id is not allowed"
 					).validated()
 			)
@@ -436,20 +289,20 @@ class PokemonRestApi {
 				newNumber = numberNode.asInt()
 				
 			} else {
-				return ResponseEntity.status(400).body(
+				return ResponseEntity.status(BAD_REQUEST).body(
 						ResponseDto(
-								code = 400,
+								code = BAD_REQUEST.value(),
 								message = "Number has to be numeral"
 						).validated()
 				)
 			}
 			
-			service.updateNumber(id, newNumber)
+			repository.updateNumber(id, newNumber)
 			
 		}
-		return ResponseEntity.status(204).body(
+		return ResponseEntity.status(NO_CONTENT).body(
 				ResponseDto(
-						code = 204,
+						code = NO_CONTENT.value(),
 						message = "Pokemon with id: $id successfully patched"
 				).validated()
 		)
@@ -468,7 +321,7 @@ class PokemonRestApi {
 	@ApiOperation("Get all pokemons by given type")
 	@ApiResponses(ApiResponse(code = 301, message = "Deprecated URI. Moved permanently."))
 	@GetMapping("/type/{type}")
-	@Deprecated(message = "Use the new method", level = DeprecationLevel.HIDDEN)
+	@Deprecated(message = "Use the new method")
 	fun deprecatedGetAllPokemonByType(@ApiParam("Type of Pokemon")
 									  @PathVariable("type")
 									  paramType: String?): ResponseEntity<List<PokemonDto>> {
@@ -476,9 +329,13 @@ class PokemonRestApi {
 		println("ENTERED DEPRECATED GetPokemonByType METHOD")
 		
 		return ResponseEntity
-				.status(301)
-				.location(UriComponentsBuilder.fromUriString("$uriPath/?type=$paramType").build().toUri())
-				.build()
+				.status(MOVED_PERMANENTLY)
+				.location(
+						UriComponentsBuilder
+								.fromUriString("$uriPath/?type=$paramType")
+								.build()
+								.toUri()
+				).build()
 		
 	}
 	
@@ -486,7 +343,7 @@ class PokemonRestApi {
 	@ApiOperation("Get a pokemon based on id")
 	@ApiResponses(ApiResponse(code = 301, message = "Deprecated URI. Moved permanently."))
 	@GetMapping("/id/{id}")
-	@Deprecated(message = "Use the new method", level = DeprecationLevel.HIDDEN)
+	@Deprecated(message = "Use the new method")
 	fun deprecatedGetPokemonById(@ApiParam("Id of the pokemon")
 								 @PathVariable("id")
 								 paramId: String?): ResponseEntity<PokemonDto> {
@@ -494,16 +351,20 @@ class PokemonRestApi {
 		println("ENTERED DEPRECATED GetPokemonById METHOD")
 		
 		return ResponseEntity
-				.status(301)
-				.location(UriComponentsBuilder.fromUriString("$uriPath/?id=$paramId").build().toUri())
-				.build()
+				.status(MOVED_PERMANENTLY)
+				.location(
+						UriComponentsBuilder
+								.fromUriString("$uriPath/?id=$paramId")
+								.build()
+								.toUri()
+				).build()
 	}
 	
 	
 	@ApiOperation("Delete a pokemon with the given id")
 	@ApiResponses(ApiResponse(code = 302, message = "Deprecated URI. Moved permanently."))
 	@DeleteMapping(path = ["/id/{id}"])
-	@Deprecated(message = "Use the new method", level = DeprecationLevel.HIDDEN)
+	@Deprecated(message = "Use the new method")
 	fun deprecatedDeletePokemon(@ApiParam("id of pokemon")
 								@PathVariable("id")
 								paramId: String?): ResponseEntity<Any> {
@@ -511,9 +372,13 @@ class PokemonRestApi {
 		println("ENTERED DEPRECATED DELETE METHOD")
 		
 		return ResponseEntity
-				.status(302) // always use 308 to ALL other redirects than GET
-				.location(UriComponentsBuilder.fromUriString("$uriPath?id=$paramId").build().toUri())
-				.build()
+				.status(PERMANENT_REDIRECT) // always use 308 to ALL other redirects than GET
+				.location(
+						UriComponentsBuilder
+								.fromUriString("$uriPath?id=$paramId")
+								.build()
+								.toUri()
+				).build()
 		
 	}
 	

@@ -15,6 +15,11 @@ import javax.validation.constraints.Size
 @Entity(name = "pokemons")
 class PokemonEntity (
 		
+		/*
+		*
+		* Elementcollection Set
+		* */
+		
 		@get:NotBlank
 		@get:Size(max = 124)
 		var imgUrl: String,
