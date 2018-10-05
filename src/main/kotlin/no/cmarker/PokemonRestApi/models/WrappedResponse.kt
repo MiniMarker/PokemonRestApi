@@ -1,8 +1,8 @@
-package no.cmarker.PokemonRestApi.utils
+package no.cmarker.PokemonRestApi.models
 
 import io.swagger.annotations.ApiModelProperty
-import no.cmarker.PokemonRestApi.dto.PageDto
-import no.cmarker.PokemonRestApi.dto.PokemonDto
+import no.cmarker.PokemonRestApi.models.dto.PageDto
+import no.cmarker.PokemonRestApi.models.dto.PokemonDto
 import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
 

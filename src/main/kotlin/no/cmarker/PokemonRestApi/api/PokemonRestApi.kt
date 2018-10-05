@@ -5,17 +5,20 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.base.Throwables
 import io.swagger.annotations.*
 import no.cmarker.PokemonRestApi.utils.DtoConverters
-import no.cmarker.PokemonRestApi.dto.PokemonDto
-import no.cmarker.PokemonRestApi.dto.ResponseDto
+import no.cmarker.PokemonRestApi.models.dto.PokemonDto
+import no.cmarker.PokemonRestApi.models.dto.ResponseDto
 import no.cmarker.PokemonRestApi.models.hal.HalLink
-import no.cmarker.PokemonRestApi.utils.WrappedResponse
+import no.cmarker.PokemonRestApi.models.WrappedResponse
+import no.cmarker.PokemonRestApi.models.dto.PageDto
 import no.cmarker.PokemonRestApi.repository.PokemonRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.util.UriComponentsBuilder
 import javax.validation.ConstraintViolationException
+import org.springframework.http.HttpStatus.*
 
 /**
  * @author Christian Marker on 24/09/2018 at 11:00.
@@ -90,9 +93,9 @@ class PokemonRestApi {
 				
 			} catch (e: Exception) {
 				
-				return ResponseEntity.status(404).body(
+				return ResponseEntity.status(NOT_FOUND).body(
 						ResponseDto(
-								code = 404,
+								code = NOT_FOUND.value(),
 								message = "Invalid id: $paramId"
 						).validated()
 				)
@@ -220,7 +223,8 @@ class PokemonRestApi {
 		return ResponseEntity.status(201).body(
 				ResponseDto(
 						code = 201,
-						message = "" + id
+						page = PageDto(data = listOf(PokemonDto(id = id))),
+						message = "Pokemon with id: $id created"
 				).validated()
 		)
 		

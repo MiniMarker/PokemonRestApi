@@ -2,8 +2,7 @@ package no.cmarker.PokemonRestApi
 
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
-import no.cmarker.PokemonRestApi.dto.PokemonDto
-import no.cmarker.PokemonRestApi.dto.ResponseDto
+import no.cmarker.PokemonRestApi.models.dto.ResponseDto
 import org.hamcrest.CoreMatchers
 import org.junit.After
 import org.junit.Before

@@ -1,4 +1,4 @@
-package no.cmarker.PokemonRestApi.dto
+package no.cmarker.PokemonRestApi.models.dto
 
 import io.swagger.annotations.ApiModelProperty
 

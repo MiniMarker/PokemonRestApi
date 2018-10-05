@@ -1,4 +1,4 @@
-package no.cmarker.PokemonRestApi.dto
+package no.cmarker.PokemonRestApi.models.dto
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.swagger.annotations.ApiModel

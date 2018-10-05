@@ -1,6 +1,6 @@
 package no.cmarker.PokemonRestApi.repository
 
-import no.cmarker.PokemonRestApi.models.PokemonEntity
+import no.cmarker.PokemonRestApi.models.entity.PokemonEntity
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional

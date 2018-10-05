@@ -4,8 +4,7 @@ import io.restassured.RestAssured
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
 import junit.framework.Assert.assertEquals
-import no.cmarker.PokemonRestApi.dto.PokemonDto
-import no.cmarker.PokemonRestApi.dto.ResponseDto
+import no.cmarker.PokemonRestApi.models.dto.PokemonDto
 import org.hamcrest.CoreMatchers
 import org.junit.Test
 
@@ -242,7 +241,7 @@ class PokemonRestApiTest : TestBase() {
 				.then()
 				.statusCode(201)
 				.extract()
-				.jsonPath().getLong("message")
+				.jsonPath().getLong("page.data[0].id")
 	}
 	
 	fun createMultiple(n: Int) {
@@ -255,7 +254,7 @@ class PokemonRestApiTest : TestBase() {
 			createPokemon(i, name, type, imgUrl)
 		}
 		
-		given().get().then().extract().body().jsonPath().prettyPrint();
+		given().get().then().extract().body().jsonPath().prettyPrint()
 		
 	}
 	

@@ -1,8 +1,8 @@
 package no.cmarker.PokemonRestApi.utils
 
-import no.cmarker.PokemonRestApi.dto.PageDto
-import no.cmarker.PokemonRestApi.dto.PokemonDto
-import no.cmarker.PokemonRestApi.models.PokemonEntity
+import no.cmarker.PokemonRestApi.models.dto.PageDto
+import no.cmarker.PokemonRestApi.models.dto.PokemonDto
+import no.cmarker.PokemonRestApi.models.entity.PokemonEntity
 import kotlin.streams.toList
 
 /**
@@ -12,6 +12,7 @@ import kotlin.streams.toList
 //object = static
 object DtoConverters {
 	
+	//List<PokemonDto> -> PageDto<PokemonDto>
 	fun transform(pokemonList: List<PokemonDto>,
 				  offset: Int,
 				  limit: Int): PageDto<PokemonDto> {
@@ -31,6 +32,7 @@ object DtoConverters {
 		
 	}
 	
+	//Single entitiy -> Dto
 	fun transform(entity: PokemonEntity): PokemonDto {
 		
 		return PokemonDto(
@@ -43,7 +45,7 @@ object DtoConverters {
 		
 	}
 	
-	// Transform multiple entities
+	//Multiple entities -> List<PokemonDto>
 	fun transform(entities: Iterable<PokemonEntity>): List<PokemonDto> {
 		
 		return entities.map { transform(it) }

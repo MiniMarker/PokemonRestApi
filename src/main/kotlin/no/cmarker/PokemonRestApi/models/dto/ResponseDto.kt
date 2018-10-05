@@ -1,7 +1,7 @@
-package no.cmarker.PokemonRestApi.dto
+package no.cmarker.PokemonRestApi.models.dto
 
-import no.cmarker.PokemonRestApi.utils.ResponseStatus
-import no.cmarker.PokemonRestApi.utils.WrappedResponse
+import no.cmarker.PokemonRestApi.models.ResponseStatus
+import no.cmarker.PokemonRestApi.models.WrappedResponse
 
 /**
  * @author Christian Marker on 28/09/2018 at 11:55.

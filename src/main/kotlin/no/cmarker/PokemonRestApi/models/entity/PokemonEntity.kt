@@ -1,4 +1,4 @@
-package no.cmarker.PokemonRestApi.models
+package no.cmarker.PokemonRestApi.models.entity
 
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
