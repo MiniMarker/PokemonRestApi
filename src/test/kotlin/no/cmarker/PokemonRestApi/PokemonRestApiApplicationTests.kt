@@ -174,7 +174,7 @@ class PokemonRestApiTest : TestBase() {
 				.then()
 				.extract()
 		
-		assertEquals(409, res1.statusCode())
+		assertEquals(404, res1.statusCode())
 		
 		/*
 		// THIS IS NOT POSSIBLE AT THIS MOMENT BECAUSE THE ID IS A LONG!

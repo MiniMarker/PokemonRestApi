@@ -1,5 +1,7 @@
 package no.cmarker.PokemonRestApi.service
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.base.Throwables
 import no.cmarker.PokemonRestApi.models.WrappedResponse
 import no.cmarker.PokemonRestApi.models.dto.PageDto
@@ -184,4 +186,247 @@ class PokemonService {
 		)
 		
 	}
+	
+	fun deletePokemon(paramId: String) : ResponseEntity<WrappedResponse<PokemonDto>> {
+		
+		println("DELETEING")
+		
+		val id: Long?
+		
+		try {
+			id = paramId.toLong()
+			
+		} catch (e: Exception) {
+			return ResponseEntity.status(BAD_REQUEST).body(
+					ResponseDto(
+							code = BAD_REQUEST.value(),
+							message = "Invalid id: $paramId"
+					).validated()
+			)
+			
+		}
+		
+		//if the given is is not registred in the DB
+		if (!repository.existsById(id)) {
+			return ResponseEntity.status(NOT_FOUND).body(
+					ResponseDto(
+							code = NOT_FOUND.value(),
+							message = "Could not find pokemon with id: $id"
+					).validated()
+			)
+		}
+		
+		repository.deleteById(id)
+		return ResponseEntity.status(NO_CONTENT).body(
+				ResponseDto(
+						code = NO_CONTENT.value(),
+						message = "Pokemon with id: $id successfully deleted"
+				).validated()
+		)
+		
+	}
+	
+	fun updatePokemon(paramId: String?, updatedPokemonDto: PokemonDto) : ResponseEntity<WrappedResponse<PokemonDto>> {
+		
+		val id: Long
+		
+		try {
+			
+			id = updatedPokemonDto.id!!.toLong()
+			
+		} catch (e: Exception) {
+			
+			// Invalid id, could not parse to long
+			// return 404 (Not found)
+			return ResponseEntity.status(NOT_FOUND).body(
+					ResponseDto(
+							code = NOT_FOUND.value(),
+							message = "Invalid id: $paramId"
+					).validated()
+			)
+		}
+		
+		if (updatedPokemonDto.id != id) {
+			
+			// return 409 (Conflict)
+			return ResponseEntity.status(CONFLICT).body(
+					ResponseDto(
+							code = CONFLICT.value(),
+							message = "The id given in the URL doesn't match the one in the JSON-obj sent as body"
+					).validated()
+			)
+		}
+		
+		if (!repository.existsById(id)) {
+			
+			// return 404 (Not found)
+			return ResponseEntity.status(NOT_FOUND).body(
+					ResponseDto(
+							code = NOT_FOUND.value(),
+							message = "Could not find pokemon with id: $id"
+					).validated()
+			)
+		}
+		
+		try {
+			
+			println("ALL OK! READY TO CHANGE THE ENTITY")
+			repository.updatePokemon(id, updatedPokemonDto.name!!, updatedPokemonDto.type!!, updatedPokemonDto.number!!, updatedPokemonDto.imgUrl!!)
+			
+		} catch (e: ConstraintViolationException) {
+			return ResponseEntity.status(BAD_REQUEST).body(
+					ResponseDto(
+							code = BAD_REQUEST.value(),
+							message = "Error while updating pokemon"
+					).validated()
+			)
+		}
+		
+		return ResponseEntity.status(NO_CONTENT).body(
+				ResponseDto(
+						code = NO_CONTENT.value(),
+						message = "Pokemon with id: $id successfully updated"
+				).validated()
+		)
+		
+	}
+	
+	fun patchNumber(paramId: String?, jsonPatch: String) : ResponseEntity<WrappedResponse<PokemonDto>> {
+		
+		val id: Long
+		
+		try {
+			// Here i try to parse the id given as String in the URL to a long value
+			id = paramId!!.toLong()
+			
+		} catch (e: Exception) {
+			
+			return ResponseEntity.status(NOT_FOUND).body(
+					ResponseDto(
+							code = NOT_FOUND.value(),
+							message = "Invalid id: $paramId"
+					).validated()
+			)
+		}
+		
+		if (!repository.existsById(id)) {
+			
+			// return 404 (Not found)
+			return ResponseEntity.status(NOT_FOUND).body(
+					ResponseDto(
+							code = NOT_FOUND.value(),
+							message = "Could not find pokemon with id: $id"
+					).validated()
+			)
+		}
+		
+		val jackson = ObjectMapper()
+		val jsonNode: JsonNode
+		
+		try {
+			jsonNode = jackson.readValue(jsonPatch, JsonNode::class.java)
+		} catch (e: Exception) {
+			
+			//Invalid JSON data
+			return ResponseEntity.status(CONFLICT).body(
+					ResponseDto(
+							code = CONFLICT.value(),
+							message = "Invalid JSON data"
+					).validated()
+			)
+		}
+		
+		val newNumber: Int
+		
+		
+		// Updating the id is not allowed
+		if (jsonNode.has("id")) {
+			return ResponseEntity.status(BAD_REQUEST).body(
+					ResponseDto(
+							code = BAD_REQUEST.value(),
+							message = "Updating the id is not allowed"
+					).validated()
+			)
+		}
+		
+		// Validating data in json body
+		if (jsonNode.has("number")) {
+			
+			val numberNode = jsonNode.get("number")
+			
+			if (numberNode.isNumber && !numberNode.isNull) {
+				
+				//All checks ok!
+				newNumber = numberNode.asInt()
+				
+			} else {
+				return ResponseEntity.status(BAD_REQUEST).body(
+						ResponseDto(
+								code = BAD_REQUEST.value(),
+								message = "Number has to be numeral"
+						).validated()
+				)
+			}
+			
+			repository.updateNumber(id, newNumber)
+			
+		}
+		return ResponseEntity.status(NO_CONTENT).body(
+				ResponseDto(
+						code = NO_CONTENT.value(),
+						message = "Pokemon with id: $id successfully patched"
+				).validated()
+		)
+	}
+	
+	// ###############################################
+	// DEPRECATED FUNCTIONS
+	// REDIRECTS TO NEW VERSIONS
+	// ###############################################
+	
+	val uriPath: String = "/pokemon"
+	
+	fun deprecatedGetAllPokemonByType(paramType: String?) : ResponseEntity<WrappedResponse<PokemonDto>> {
+		
+		println("ENTERED DEPRECATED GetPokemonByType METHOD")
+		
+		return ResponseEntity
+				.status(MOVED_PERMANENTLY)
+				.location(
+						UriComponentsBuilder
+								.fromUriString("$uriPath/?type=$paramType")
+								.build()
+								.toUri()
+				).build()
+	}
+	
+	fun deprecatedGetPokemonById(paramId: String?) : ResponseEntity<WrappedResponse<PokemonDto>> {
+		
+		println("ENTERED DEPRECATED GetPokemonById METHOD")
+		
+		return ResponseEntity
+				.status(MOVED_PERMANENTLY)
+				.location(
+						UriComponentsBuilder
+								.fromUriString("$uriPath/?id=$paramId")
+								.build()
+								.toUri()
+				).build()
+	}
+	
+	fun deprecatedDeletePokemon(paramId: String?) : ResponseEntity<WrappedResponse<PokemonDto>> {
+		
+		println("ENTERED DEPRECATED DELETE METHOD")
+		
+		return ResponseEntity
+				.status(PERMANENT_REDIRECT) // always use 308 to ALL other redirects than GET
+				.location(
+						UriComponentsBuilder
+								.fromUriString("$uriPath?id=$paramId")
+								.build()
+								.toUri()
+				).build()
+		
+	}
+	
 }

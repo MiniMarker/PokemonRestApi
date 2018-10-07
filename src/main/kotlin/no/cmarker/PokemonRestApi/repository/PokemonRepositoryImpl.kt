@@ -18,8 +18,6 @@ class PokemonRepositoryImpl : PokemonRepositoryCustom {
 	@Autowired
 	private lateinit var em: EntityManager
 	
-	@Autowired
-	private lateinit var crudRepository: PokemonRepository
 	
 	override fun createPokemon(number: Int, name: String, type: String, imgUrl: String): Long {
 		
