@@ -15,7 +15,7 @@ open class WrappedResponse<T>(
 		var code: Int? = null,
 		
 		@ApiModelProperty("The wrapped data-payload")
-		var page: PageDto<PokemonDto>? = null,
+		var page: PageDto<T>? = null,
 		
 		@ApiModelProperty("Error message in case of there was an error in the request")
 		var message: String? = null,

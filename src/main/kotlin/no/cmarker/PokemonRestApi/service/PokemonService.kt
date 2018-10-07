@@ -382,6 +382,15 @@ class PokemonService {
 	// ###############################################
 	// DEPRECATED FUNCTIONS
 	// REDIRECTS TO NEW VERSIONS
+	//
+	//	Terminal curl command
+	//	curl -X "DELETE" -L <URL>
+	//
+	//		Flags:
+	//			-v		Verbose (Get logs)
+	//			-X 		Needed if you are doing other actions than GET
+	//			-L 		Follow redirects
+	//
 	// ###############################################
 	
 	val uriPath: String = "/pokemon"
