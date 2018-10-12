@@ -30,7 +30,7 @@ class PokemonRestApi {
 	/*
 		GET
 	 */
-	
+	@CrossOrigin
 	@ApiOperation("Get pokemon")
 	@GetMapping
 	fun get(

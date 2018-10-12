@@ -11,8 +11,9 @@ import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import javax.validation.ConstraintViolationException
 
-
-
+/**
+ * Created by arcuri82
+ */
 @ControllerAdvice
 class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
 
