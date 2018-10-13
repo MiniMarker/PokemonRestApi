@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.sql.Timestamp
 import javax.persistence.EntityManager
 
 /**
@@ -18,10 +19,12 @@ class PokemonRepositoryImpl : PokemonRepositoryCustom {
 	@Autowired
 	private lateinit var em: EntityManager
 	
-	
 	override fun createPokemon(number: Int, name: String, type: String, imgUrl: String): Long {
 		
+		//val timestamp = Timestamp(System.currentTimeMillis()).time
+		
 		val entity = PokemonEntity(imgUrl, number, name, type)
+		
 		em.persist(entity)
 		return entity.id!!
 		
@@ -29,9 +32,12 @@ class PokemonRepositoryImpl : PokemonRepositoryCustom {
 	
 	override fun updateNumber(id: Long, newNumber: Int): Boolean {
 		
+		//val timestamp = Timestamp(System.currentTimeMillis()).time
+		
 		val entity = em.find(PokemonEntity::class.java, id) ?: return false
 		
 		entity.number = newNumber
+		//entity.lastModified = timestamp
 		
 		return true
 	}
@@ -47,12 +53,14 @@ class PokemonRepositoryImpl : PokemonRepositoryCustom {
 	
 	override fun updatePokemon(id: Long, name: String, type: String, number: Int, imgUrl: String) : Boolean {
 		
+		//val timestamp = Timestamp(System.currentTimeMillis()).time
 		val pokemon = em.find(PokemonEntity::class.java, id) ?: return false
 		
 		pokemon.name = name
 		pokemon.type = type
 		pokemon.number = number
 		pokemon.imgUrl = imgUrl
+		//pokemon.lastModified = timestamp
 		
 		return true
 	}

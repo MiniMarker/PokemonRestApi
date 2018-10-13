@@ -142,7 +142,6 @@ class PokemonRestApiTest : TestBase() {
 				.extract()
 		
 		assertEquals(204, res.statusCode())
-		
 	}
 	
 	@Test
@@ -169,7 +168,7 @@ class PokemonRestApiTest : TestBase() {
 		val res1 = given()
 				.contentType(ContentType.JSON)
 				.pathParam("id", id)
-				.body(PokemonDto(99, updatedNumber, updatedName, updatedType, imgUrl))
+				.body(PokemonDto(99, updatedNumber, updatedName, updatedType, updatedImgUrl))
 				.put("/id/{id}")
 				.then()
 				.extract()
@@ -225,41 +224,4 @@ class PokemonRestApiTest : TestBase() {
 				.statusCode(204)
 				.body("number", CoreMatchers.equalTo(updatedNumber))
 	}
-	
-	
-	/*
-		HELPING METHODS!
-	 */
-	
-	fun createPokemon(number: Int, name: String, type: String, imgUrl: String): Long {
-		
-		val dto = PokemonDto(null, number, name, type, imgUrl)
-		
-		return given().contentType(ContentType.JSON)
-				.body(dto)        // send the DTO as POST req body
-				.post()
-				.then()
-				.statusCode(201)
-				.extract()
-				.jsonPath().getLong("page.data[0].id")
-	}
-	
-	fun createMultiple(n: Int) {
-		
-		val name = "defaultName"
-		val type = "defaultType"
-		val imgUrl = "defaultUrl"
-		
-		for (i in 1..n) {
-			createPokemon(i, name, type, imgUrl)
-		}
-		
-		given().get().then().extract().body().jsonPath().prettyPrint()
-		
-	}
-	
-	fun assertResultSize(size: Int){
-		given().get().then().statusCode(200).body("page.data.size()", CoreMatchers.equalTo(size))
-	}
-	
 }

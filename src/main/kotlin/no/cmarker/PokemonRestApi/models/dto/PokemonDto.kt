@@ -21,5 +21,8 @@ data class PokemonDto(
 		
 		@ApiModelProperty("The imgUrl of the pokemon")
 		var imgUrl: String? = null
+		
+		
+		
 
 )

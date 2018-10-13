@@ -37,6 +37,7 @@ object DtoConverters {
 		
 		return PokemonDto(
 				id = entity.id,
+				//lastModified = entity.lastModified,
 				number = entity.number,
 				name = entity.name,
 				type = entity.type,

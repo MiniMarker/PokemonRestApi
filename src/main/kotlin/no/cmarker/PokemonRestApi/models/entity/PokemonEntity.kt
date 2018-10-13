@@ -1,5 +1,8 @@
 package no.cmarker.PokemonRestApi.models.entity
 
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
+import java.time.LocalDateTime
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
@@ -17,7 +20,8 @@ class PokemonEntity (
 		
 		/*
 		*
-		* Elementcollection Set
+		* Elementcollection Set for arrays
+		*
 		* */
 		
 		@get:NotBlank

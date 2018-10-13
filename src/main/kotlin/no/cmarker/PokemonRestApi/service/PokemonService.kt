@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus.*
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import javax.validation.ConstraintViolationException
 
@@ -27,6 +28,9 @@ class PokemonService {
 	@Autowired
 	private lateinit var repository: PokemonRepository
 	
+	@Autowired
+	private lateinit var restTemplate: RestTemplate
+	
 	fun get(paramId: String?, paramType: String?, offset: Int, limit: Int) : ResponseEntity<WrappedResponse<PokemonDto>> {
 		
 		
@@ -34,7 +38,7 @@ class PokemonService {
 			return ResponseEntity.status(BAD_REQUEST).body(
 					ResponseDto(
 							code = BAD_REQUEST.value(),
-							message = "Invalid offset or limit. Offset need to be a positive number, and limit need to be greater than 1."
+							message = "Invalid offset or limit.	 Rules: Offset > 0 && limit >= 1"
 					).validated()
 			)
 		}
@@ -43,13 +47,15 @@ class PokemonService {
 		val builder = UriComponentsBuilder.fromPath("/pokemon")
 		
 		// If no params are defined, return all data in database
+		// GET ALL
 		if (paramId.isNullOrBlank() && paramType.isNullOrBlank()) {
 			
 			pokemonResultList = DtoConverters.transform(repository.findAll())
 			
 		}
 		
-		// If only paramId is defined, the pokemon with that id
+		// If only paramId is defined, get the pokemon with the given id
+		// GET BY ID
 		else if (!paramId.isNullOrBlank() && paramType.isNullOrBlank()) {
 			
 			val id = try {
@@ -83,9 +89,10 @@ class PokemonService {
 		}
 		
 		// Else If only paramType is defined, return all pokemon in that type
+		// GET BY TYPE
 		else {
 			
-			pokemonResultList = DtoConverters.transform(repository.findAllByType(paramType!!))
+			pokemonResultList = DtoConverters.transform(repository.findAllByTypeIgnoreCase(paramType!!))
 			
 			builder.queryParam("type", paramType)
 		}
@@ -127,12 +134,16 @@ class PokemonService {
 			)
 		}
 		
-		return ResponseEntity.status(OK).body(
-				ResponseDto(
-						code = OK.value(),
-						page = dto
-				
-				).validated()
+		val etag = pokemonResultList.hashCode().toString()
+		
+		return ResponseEntity.status(OK)
+				.eTag(etag)
+				//.lastModified(pokemonResultList[0].lastModified!!)
+				.body(
+					ResponseDto(
+							code = OK.value(),
+							page = dto
+					).validated()
 		)
 	}
 	
@@ -150,19 +161,34 @@ class PokemonService {
 					).validated()
 			)
 		}
+		/*
+		if (dto.lastModified != null) {
+			return ResponseEntity.status(NOT_FOUND).body(
+					ResponseDto(
+							code = NOT_FOUND.value(),
+							message = "lastModified != null, you cannot create a pokemon with predefined lastModified"
+					).validated()
+			)
+		}
+		*/
+		
+		
+		
 		val id: Long?
 		
 		if (dto.name == null || dto.number == null || dto.type == null || dto.imgUrl == null) {
 			return ResponseEntity.status(BAD_REQUEST).body(
 					ResponseDto(
 							code = BAD_REQUEST.value(),
-							message = "you need to spesify a name, number, type and imgUrl when creating a Pokemon"
+							message = "You need to specify a name, number, type and imgUrl when creating a Pokemon"
 					).validated()
 			)
 		}
 		
 		try {
+			
 			id = repository.createPokemon(dto.number!!, dto.name!!, dto.type!!, dto.imgUrl!!)
+			//id = repository.createPokemon(dto.number!!, dto.name!!, dto.type!!, dto.imgUrl!!)
 			
 		} catch (e: Exception) {
 			
@@ -188,8 +214,6 @@ class PokemonService {
 	}
 	
 	fun deletePokemon(paramId: String) : ResponseEntity<WrappedResponse<PokemonDto>> {
-		
-		println("DELETEING")
 		
 		val id: Long?
 		
@@ -270,7 +294,6 @@ class PokemonService {
 		
 		try {
 			
-			println("ALL OK! READY TO CHANGE THE ENTITY")
 			repository.updatePokemon(id, updatedPokemonDto.name!!, updatedPokemonDto.type!!, updatedPokemonDto.number!!, updatedPokemonDto.imgUrl!!)
 			
 		} catch (e: ConstraintViolationException) {

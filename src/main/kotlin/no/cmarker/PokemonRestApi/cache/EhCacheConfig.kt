@@ -18,6 +18,8 @@ import org.springframework.web.client.RestTemplate
 /**
  * Created by arcuri82
  */
+@Configuration
+@EnableCaching
 class EhCacheConfig {
 	
 	@Bean

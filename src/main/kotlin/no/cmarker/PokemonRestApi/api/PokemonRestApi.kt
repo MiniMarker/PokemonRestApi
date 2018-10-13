@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.client.RestTemplate
 
 /**
  * @author Christian Marker on 24/09/2018 at 11:00.
  */
+
+const val BASE_JSON = "application/json;charset=UTF-8"
 
 //TODO Make a separate table with evolve info for all pokemons
 
@@ -32,7 +35,7 @@ class PokemonRestApi {
 	 */
 	@CrossOrigin
 	@ApiOperation("Get pokemon")
-	@GetMapping
+	@GetMapping(produces = [(MediaType.APPLICATION_JSON_VALUE)])
 	fun get(
 			@ApiParam("Id if the pokemon")
 			@RequestParam("id", required = false)
@@ -128,7 +131,7 @@ class PokemonRestApi {
 	val uriPath: String = "/pokemon"
 	
 	/**
-	 * This function uses the findAllByType() that CrudRepository<T, K> automatically creates when i specifies
+	 * This function uses the findAllByTypeIgnoreCase() that CrudRepository<T, K> automatically creates when i specifies
 	 * findAllBy{param} in the interface that extends CrudRepository<T, K>
 	 */
 	@ApiOperation("Get all pokemons by given type")
