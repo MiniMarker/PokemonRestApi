@@ -7,18 +7,17 @@ import junit.framework.Assert.assertEquals
 import no.cmarker.PokemonRestApi.models.dto.PokemonDto
 import org.hamcrest.CoreMatchers
 import org.junit.Test
+import org.springframework.http.HttpStatus.*
 
 class PokemonRestApiTest : TestBase() {
 	
 	@Test
 	fun testCleanDB() {
 		
-		val response = RestAssured.given().get().then()
-				.statusCode(200)
-				.body("page.data.size()", CoreMatchers.equalTo(0))
-				.and().extract().response()
-		
-		println(response.asString())
+		val response = given().get().then()
+			.statusCode(OK.value())
+			.body("page.data.size()", CoreMatchers.equalTo(0))
+			.and().extract().response()
 		
 	}
 	
@@ -37,21 +36,19 @@ class PokemonRestApiTest : TestBase() {
 		assertResultSize(1)
 		
 		val resultList = given().param("id", id1)
-				.get()
-				.then()
-				.statusCode(200)
-				.extract().jsonPath().getMap<String, Any>("page.data[0]")
+			.get()
+			.then()
+			.statusCode(OK.value())
+			.extract().jsonPath().getMap<String, Any>("page.data[0]")
 		
 		//assertEquals(resultList["id"], id1)
 		assertEquals(resultList["name"], name)
 		assertEquals(resultList["type"], type)
 		assertEquals(resultList["imgUrl"], imgUrl)
-		
-		//println(resultList)
 	}
 	
 	@Test
-	fun createMultipleTest(){
+	fun createMultipleTest() {
 		
 		
 		createMultiple(8)
@@ -75,16 +72,16 @@ class PokemonRestApiTest : TestBase() {
 		assertResultSize(1)
 		
 		given().param("type", "Grass")
-				.get()
-				.then()
-				.statusCode(200)
-				.body("page.data.size()", CoreMatchers.equalTo(1))
+			.get()
+			.then()
+			.statusCode(OK.value())
+			.body("page.data.size()", CoreMatchers.equalTo(1))
 		
 		given().param("type", "Water")
-				.get()
-				.then()
-				.statusCode(200)
-				.body("page.data.size()", CoreMatchers.equalTo(0))
+			.get()
+			.then()
+			.statusCode(OK.value())
+			.body("page.data.size()", CoreMatchers.equalTo(0))
 	}
 	
 	@Test
@@ -109,7 +106,7 @@ class PokemonRestApiTest : TestBase() {
 		// asserting
 		given().get().then().body("page.data.id", CoreMatchers.not(CoreMatchers.containsString("" + id1)))
 		assertResultSize(1)
-		assertEquals(204, resCode)
+		assertEquals(NO_CONTENT.value(), resCode)
 	}
 	
 	@Test
@@ -134,14 +131,14 @@ class PokemonRestApiTest : TestBase() {
 		// The id is not a Long, the code will fail at
 		// Expected error code: 500
 		val res = given()
-				.contentType(ContentType.JSON)
-				.pathParam("id", id)
-				.body(PokemonDto(id, updatedNumber, updatedName, updatedType, updatedImgUrl))
-				.put("/id/{id}")
-				.then()
-				.extract()
+			.contentType(ContentType.JSON)
+			.pathParam("id", id)
+			.body(PokemonDto(id, updatedNumber, updatedName, updatedType, updatedImgUrl))
+			.put("/id/{id}")
+			.then()
+			.extract()
 		
-		assertEquals(204, res.statusCode())
+		assertEquals(NO_CONTENT.value(), res.statusCode())
 	}
 	
 	@Test
@@ -163,17 +160,26 @@ class PokemonRestApiTest : TestBase() {
 		val updatedType = "UpdatedType"
 		val updatedImgUrl = "UpdatedUrl"
 		
+		val etag = given().param("id", id)
+			.get()
+			.then()
+			.statusCode(OK.value())
+			.extract().header("ETag")
+			// The ETag is padded with "<etag>"
+			.removeSurrounding("\"")
+		
 		// The id in param doesn't match the id in the req. body
 		// Expected error code: 409
 		val res1 = given()
-				.contentType(ContentType.JSON)
-				.pathParam("id", id)
-				.body(PokemonDto(99, updatedNumber, updatedName, updatedType, updatedImgUrl))
-				.put("/id/{id}")
-				.then()
-				.extract()
+			.header("If-Match", etag)
+			.contentType(ContentType.JSON)
+			.pathParam("id", id)
+			.body(PokemonDto(99, updatedNumber, updatedName, updatedType, updatedImgUrl))
+			.put("/id/{id}")
+			.then()
+			.extract()
 		
-		assertEquals(404, res1.statusCode())
+		assertEquals(NOT_FOUND.value(), res1.statusCode())
 		
 		/*
 		// THIS IS NOT POSSIBLE AT THIS MOMENT BECAUSE THE ID IS A LONG!
@@ -218,35 +224,35 @@ class PokemonRestApiTest : TestBase() {
 		val updatedNumber = 222
 		
 		given().contentType("application/merge-patch+json")
-				.pathParam("id", id)
-				.body("{'number': $updatedNumber}")
-				.then()
-				.statusCode(204)
-				.body("number", CoreMatchers.equalTo(updatedNumber))
+			.pathParam("id", id)
+			.body("{'number': $updatedNumber}")
+			.then()
+			.statusCode(NO_CONTENT.value())
+			.body("number", CoreMatchers.equalTo(updatedNumber))
 	}
 	
 	@Test
 	fun testEtag() {
-		assertResultSize(0);
+		assertResultSize(0)
 		
 		val etag = RestAssured.given().accept(ContentType.JSON)
-				.get()
-				.then()
-				.statusCode(200)
-				.header("ETag", CoreMatchers.notNullValue())
-				.extract().header("ETag")
+			.get()
+			.then()
+			.statusCode(OK.value())
+			.header("ETag", CoreMatchers.notNullValue())
+			.extract().header("ETag")
 		
 		
-		RestAssured.given().accept(ContentType.JSON)
-				.header("If-None-Match", etag)
-				.get()
-				.then()
-				.statusCode(304)
-				.content(CoreMatchers.equalTo(""))
+		given().accept(ContentType.JSON)
+			.header("If-None-Match", etag)
+			.get()
+			.then()
+			.statusCode(NOT_MODIFIED.value())
+			.content(CoreMatchers.equalTo(""))
 	}
 	
 	@Test
-	fun testEtagAfterUpdate(){
+	fun testEtagAfterUpdate() {
 		
 		val number = 98
 		val name = "Owly"
@@ -256,68 +262,70 @@ class PokemonRestApiTest : TestBase() {
 		val id = createPokemon(number, name, type, imgUrl)
 		
 		val etag = given().accept(ContentType.JSON)
-				.get()
-				.then()
-				.statusCode(200)
-				.header("ETag", CoreMatchers.notNullValue())
-				.extract().header("ETag")
+			.get()
+			.then()
+			.statusCode(OK.value())
+			.header("ETag", CoreMatchers.notNullValue())
+			.extract().header("ETag")
 		
 		given().accept(ContentType.JSON)
-				.header("If-None-Match", etag)
-				.get()
-				.then()
-				.statusCode(304)
-				.content(CoreMatchers.equalTo(""))
+			.header("If-None-Match", etag)
+			.get()
+			.then()
+			.statusCode(NOT_MODIFIED.value())
+			.content(CoreMatchers.equalTo(""))
 		
 		// Updating entitiy to change the generated ETag
-
+		
 		given().contentType(ContentType.JSON)
-				.pathParam("id", id)
-				.body(PokemonDto(id, number, "updatedName", type, imgUrl))
-				.put("/id/{id}")
+			.pathParam("id", id)
+			.body(PokemonDto(id, number, "updatedName", type, imgUrl))
+			.put("/id/{id}")
 		
 		given().accept(ContentType.JSON)
-				.header("If-None-Match", etag)
-				.get()
-				.then()
-				.statusCode(200)
-				.header("ETag", CoreMatchers.notNullValue())
-				.header("Etag", CoreMatchers.not(CoreMatchers.equalTo(etag)))
-		
+			.header("If-None-Match", etag)
+			.get()
+			.then()
+			.statusCode(OK.value())
+			.header("ETag", CoreMatchers.notNullValue())
+			.header("Etag", CoreMatchers.not(CoreMatchers.equalTo(etag)))
 	}
 	
-	/*
-		HELPING METHODS!
-	 */
-	
-	fun createPokemon(number: Int, name: String, type: String, imgUrl: String): Long {
+	@Test
+	fun testOptimisticLocking() {
 		
-		val dto = PokemonDto(null, number, name, type, imgUrl)
-		
-		return RestAssured.given().contentType(ContentType.JSON)
-				.body(dto)        // send the DTO as POST req body
-				.post()
-				.then()
-				.statusCode(201)
-				.extract()
-				.jsonPath().getLong("page.data[0].id")
-	}
-	
-	fun createMultiple(n: Int) {
-		
-		val name = "defaultName"
-		val type = "defaultType"
+		val number = 98
+		val name = "Owly"
+		val type = "Grass"
 		val imgUrl = "defaultUrl"
 		
-		for (i in 1..n) {
-			createPokemon(i, name, type, imgUrl)
-		}
+		val id1 = createPokemon(number, name, type, imgUrl)
 		
-		RestAssured.given().get().then().extract().body().jsonPath().prettyPrint()
+		val response = given().param("id", id1).get().then().extract().response()
 		
-	}
-	
-	fun assertResultSize(size: Int){
-		RestAssured.given().get().then().statusCode(200).body("page.data.size()", CoreMatchers.equalTo(size))
+		val etag = response.header("ETag")
+		
+		// Make the ETag invalid by simulating a modification made by someone else
+		val updatedName = "Charichar"
+		
+		given()
+			.contentType(ContentType.JSON)
+			.pathParam("id", id1)
+			.body(PokemonDto(id1, number, updatedName, type, imgUrl))
+			.put("/id/{id}")
+			.then()
+			.statusCode(NO_CONTENT.value())
+		
+		// try to update with now invalid ETag
+		val updatedName2 = "Longilong"
+		given()
+			.contentType(ContentType.JSON)
+			.pathParam("id", id1)
+			.header("If-Match", etag)
+			.body(PokemonDto(id1, number, updatedName2, type, imgUrl))
+			.put("/id/{id}")
+			.then()
+			.statusCode(PRECONDITION_FAILED.value())
+		
 	}
 }

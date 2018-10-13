@@ -255,9 +255,7 @@ class PokemonService {
 	
 	fun updatePokemon(ifMatch: String?, paramId: String?, updatedPokemonDto: PokemonDto) : ResponseEntity<WrappedResponse<PokemonDto>> {
 		
-		RestAssured.baseURI = "http://localhost"
-		RestAssured.port = 8080
-		RestAssured.basePath = "/pokemon"
+		
 		
 		val etag = given().param("id", paramId)
 				.get()
@@ -448,63 +446,6 @@ class PokemonService {
 		)
 	}
 	
-	// ###############################################
-	// DEPRECATED FUNCTIONS
-	// REDIRECTS TO NEW VERSIONS
-	//
-	//	Terminal curl command
-	//	curl -X "DELETE" -L <URL>
-	//
-	//		Flags:
-	//			-v		Verbose (Get logs)
-	//			-X 		Needed if you are doing other actions than GET
-	//			-L 		Follow redirects
-	//
-	// ###############################################
 	
-	val uriPath: String = "/pokemon"
-	
-	fun deprecatedGetAllPokemonByType(paramType: String?) : ResponseEntity<WrappedResponse<PokemonDto>> {
-		
-		println("ENTERED DEPRECATED GetPokemonByType METHOD")
-		
-		return ResponseEntity
-				.status(MOVED_PERMANENTLY)
-				.location(
-						UriComponentsBuilder
-								.fromUriString("$uriPath/?type=$paramType")
-								.build()
-								.toUri()
-				).build()
-	}
-	
-	fun deprecatedGetPokemonById(paramId: String?) : ResponseEntity<WrappedResponse<PokemonDto>> {
-		
-		println("ENTERED DEPRECATED GetPokemonById METHOD")
-		
-		return ResponseEntity
-				.status(MOVED_PERMANENTLY)
-				.location(
-						UriComponentsBuilder
-								.fromUriString("$uriPath/?id=$paramId")
-								.build()
-								.toUri()
-				).build()
-	}
-	
-	fun deprecatedDeletePokemon(paramId: String?) : ResponseEntity<WrappedResponse<PokemonDto>> {
-		
-		println("ENTERED DEPRECATED DELETE METHOD")
-		
-		return ResponseEntity
-				.status(PERMANENT_REDIRECT) // always use 308 to ALL other redirects than GET
-				.location(
-						UriComponentsBuilder
-								.fromUriString("$uriPath?id=$paramId")
-								.build()
-								.toUri()
-				).build()
-		
-	}
 	
 }

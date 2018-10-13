@@ -4,6 +4,7 @@ import io.swagger.annotations.*
 import no.cmarker.PokemonRestApi.models.dto.PokemonDto
 import no.cmarker.PokemonRestApi.models.WrappedResponse
 import no.cmarker.PokemonRestApi.service.PokemonService
+import no.cmarker.PokemonRestApi.service.PokemonServiceDeprecated
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -29,6 +30,9 @@ class PokemonRestApi {
 	
 	@Autowired
 	private lateinit var service: PokemonService
+	
+	@Autowired
+	private lateinit var deprecatedService: PokemonServiceDeprecated;
 	
 	/*
 		GET
@@ -139,7 +143,7 @@ class PokemonRestApi {
 									  @PathVariable("type")
 									  paramType: String?): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
-		return service.deprecatedGetAllPokemonByType(paramType)
+		return deprecatedService.deprecatedGetAllPokemonByType(paramType)
 		
 	}
 	
@@ -152,7 +156,7 @@ class PokemonRestApi {
 								 @PathVariable("id")
 								 paramId: String?): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
-		return service.deprecatedGetPokemonById(paramId)
+		return deprecatedService.deprecatedGetPokemonById(paramId)
 	}
 	
 	
@@ -164,6 +168,6 @@ class PokemonRestApi {
 								@PathVariable("id")
 								paramId: String?): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
-		return service.deprecatedDeletePokemon(paramId)
+		return deprecatedService.deprecatedDeletePokemon(paramId)
 	}
 }
