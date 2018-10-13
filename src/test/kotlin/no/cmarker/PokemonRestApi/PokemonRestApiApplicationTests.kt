@@ -224,4 +224,65 @@ class PokemonRestApiTest : TestBase() {
 				.statusCode(204)
 				.body("number", CoreMatchers.equalTo(updatedNumber))
 	}
+	
+	
+	@Test
+	fun testEtag() {
+		assertResultSize(0);
+		
+		val etag = RestAssured.given().accept(ContentType.JSON)
+				.get()
+				.then()
+				.statusCode(200)
+				.header("ETag", CoreMatchers.notNullValue())
+				.extract().header("ETag")
+		
+		
+		RestAssured.given().accept(ContentType.JSON)
+				.header("If-None-Match", etag)
+				.get()
+				.then()
+				.statusCode(304)
+				.content(CoreMatchers.equalTo(""))
+	}
+	
+	@Test
+	fun testEtagAfterUpdate(){
+		
+		val number = 98
+		val name = "Owly"
+		val type = "Grass"
+		val imgUrl = "defaultUrl"
+		
+		val id = createPokemon(number, name, type, imgUrl)
+		
+		val etag = given().accept(ContentType.JSON)
+				.get()
+				.then()
+				.statusCode(200)
+				.header("ETag", CoreMatchers.notNullValue())
+				.extract().header("ETag")
+		
+		given().accept(ContentType.JSON)
+				.header("If-None-Match", etag)
+				.get()
+				.then()
+				.statusCode(304)
+				.content(CoreMatchers.equalTo(""))
+		
+		// Updating entitiy to change the generated ETag
+		given().contentType(ContentType.JSON)
+				.pathParam("id", id)
+				.body(PokemonDto(id, number, "updatedName", type, imgUrl))
+				.put("/id/{id}")
+		
+		given().accept(ContentType.JSON)
+				.header("If-None-Match", etag)
+				.get()
+				.then()
+				.statusCode(200)
+				.header("ETag", CoreMatchers.notNullValue())
+				.header("Etag", CoreMatchers.not(CoreMatchers.equalTo(etag)))
+		
+	}
 }

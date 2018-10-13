@@ -7,7 +7,7 @@ branches:
   only:
   - master
 
-script: HEROKU_API_KEY="$HEROKU_API_KEY" mvn clean verify -Pheroku
+script: mvn clean verify
 
 notifications:
   email:
