@@ -1,6 +1,7 @@
 package no.cmarker.PokemonRestApi
 
 import io.restassured.RestAssured
+import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
 import no.cmarker.PokemonRestApi.models.dto.PokemonDto
 import no.cmarker.PokemonRestApi.models.dto.ResponseDto
@@ -36,7 +37,7 @@ abstract class TestBase {
 		
 		RestAssured.enableLoggingOfRequestAndResponseIfValidationFails()
 		
-		val list = RestAssured.given().accept(ContentType.JSON).get()
+		val list = given().accept(ContentType.JSON).get()
 				.then()
 				.statusCode(200)
 				.extract()
@@ -44,14 +45,14 @@ abstract class TestBase {
 				
 		
 		list.page!!.data.stream().forEach {
-			RestAssured.given()
+			given()
 					.param("id", it.id)
 					.delete()
 					.then()
 					.statusCode(204)
 		}
 		
-		RestAssured.given()
+		given()
 				.get()
 				.then()
 				.statusCode(200)

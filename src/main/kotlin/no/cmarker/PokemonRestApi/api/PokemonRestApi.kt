@@ -38,20 +38,16 @@ class PokemonRestApi {
 	@GetMapping(produces = [(MediaType.APPLICATION_JSON_VALUE)])
 	fun get(
 			@ApiParam("Id if the pokemon")
-			@RequestParam("id", required = false)
-			paramId: String?,
+			@RequestParam("id", required = false) paramId: String?,
 			//
 			@ApiParam("Type of the pokemons")
-			@RequestParam("type", required = false)
-			paramType: String?,
+			@RequestParam("type", required = false) paramType: String?,
 			//
 			@ApiParam("Offset in the list of news")
-			@RequestParam("offset", defaultValue = "0")
-			offset: Int,
+			@RequestParam("offset", defaultValue = "0") offset: Int,
 			//
 			@ApiParam("Limit of news in a single retrieved page")
-			@RequestParam("limit", defaultValue = "10")
-			limit: Int
+			@RequestParam("limit", defaultValue = "10") limit: Int
 	): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
 		return service.get(paramId, paramType, offset, limit)
@@ -66,8 +62,8 @@ class PokemonRestApi {
 	@PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE])
 	@ApiResponse(code = 201, message = "The id of newly created pokemon")
 	fun createPokemon(@ApiParam("Pokemon number, name and type")
-					  @RequestBody
-					  dto: PokemonDto): ResponseEntity<WrappedResponse<PokemonDto>> {
+					  @RequestBody dto: PokemonDto
+	): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
 		return service.createPokemon(dto)
 		
@@ -80,11 +76,10 @@ class PokemonRestApi {
 	@ApiOperation("Delete a pokemon with the given id")
 	@DeleteMapping
 	fun deletePokemon(@ApiParam("id of pokemon")
-					  @RequestParam("id", required = true)
-					  paramId: String): ResponseEntity<WrappedResponse<PokemonDto>> {
+					  @RequestParam("id", required = true) paramId: String
+	): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
 		return service.deletePokemon(paramId)
-		
 	}
 	
 	
@@ -94,15 +89,16 @@ class PokemonRestApi {
 	
 	@ApiOperation("Update all info for a given pokemon")
 	@PutMapping(path = ["/id/{id}"], consumes = [(MediaType.APPLICATION_JSON_VALUE)])
-	fun updatePokemon(@ApiParam("id of pokemon")
-					  @PathVariable("id")
-					  paramId: String?,
+	fun updatePokemon(@RequestHeader("If-Match") ifMatch: String?,
+	
+					  @ApiParam("id of pokemon")
+					  @PathVariable("id") paramId: String?,
 	
 					  @ApiParam("The updated pokemon data")
-					  @RequestBody
-					  updatedPokemonDto: PokemonDto): ResponseEntity<WrappedResponse<PokemonDto>> {
+					  @RequestBody updatedPokemonDto: PokemonDto
+	): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
-		return service.updatePokemon(paramId, updatedPokemonDto)
+		return service.updatePokemon(ifMatch, paramId, updatedPokemonDto)
 		
 	}
 	
@@ -114,15 +110,16 @@ class PokemonRestApi {
 	@PatchMapping(
 			path = ["/id/{id}"],
 			consumes = ["application/merge-patch+json"])
-	fun patchNumber(@ApiParam("The id of the pokemon to update")
-					@PathVariable("id")
-					paramId: String?,
+	fun patchNumber(@RequestHeader("If-Match") ifMatch: String?,
+					
+					@ApiParam("The id of the pokemon to update")
+					@PathVariable("id") paramId: String?,
 	
 					@ApiParam("The partial patch (number only).")
-					@RequestBody
-					jsonPatch: String): ResponseEntity<WrappedResponse<PokemonDto>> {
+					@RequestBody jsonPatch: String
+	): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
-		return service.patchNumber(paramId, jsonPatch)
+		return service.patchNumber(ifMatch, paramId, jsonPatch)
 		
 	}
 	

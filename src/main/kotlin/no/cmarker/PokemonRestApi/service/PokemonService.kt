@@ -3,6 +3,8 @@ package no.cmarker.PokemonRestApi.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.base.Throwables
+import io.restassured.RestAssured
+import io.restassured.RestAssured.given
 import no.cmarker.PokemonRestApi.models.WrappedResponse
 import no.cmarker.PokemonRestApi.models.dto.PageDto
 import no.cmarker.PokemonRestApi.models.dto.PokemonDto
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus.*
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.getForEntity
 import org.springframework.web.util.UriComponentsBuilder
 import javax.validation.ConstraintViolationException
 
@@ -250,7 +253,28 @@ class PokemonService {
 		
 	}
 	
-	fun updatePokemon(paramId: String?, updatedPokemonDto: PokemonDto) : ResponseEntity<WrappedResponse<PokemonDto>> {
+	fun updatePokemon(ifMatch: String?, paramId: String?, updatedPokemonDto: PokemonDto) : ResponseEntity<WrappedResponse<PokemonDto>> {
+		
+		RestAssured.baseURI = "http://localhost"
+		RestAssured.port = 8080
+		RestAssured.basePath = "/pokemon"
+		
+		val etag = given().param("id", paramId)
+				.get()
+				.then()
+				.statusCode(200)
+				.extract().header("ETag")
+				// The ETag is padded with "<etag>"
+				.removeSurrounding("\"")
+		
+		if (ifMatch != null && ifMatch.trim() != etag){
+			return ResponseEntity.status(PRECONDITION_FAILED).body(
+					ResponseDto(
+							code = PRECONDITION_FAILED.value(),
+							message = "ERROR! If-Match flag in request header does not match tha latest etag."
+					).validated()
+			)
+		}
 		
 		val id: Long
 		
@@ -314,7 +338,29 @@ class PokemonService {
 		
 	}
 	
-	fun patchNumber(paramId: String?, jsonPatch: String) : ResponseEntity<WrappedResponse<PokemonDto>> {
+	fun patchNumber(ifMatch: String?, paramId: String?, jsonPatch: String) : ResponseEntity<WrappedResponse<PokemonDto>> {
+		
+		RestAssured.baseURI = "http://localhost"
+		RestAssured.port = 8080
+		RestAssured.basePath = "/pokemon"
+		
+		val etag = given().param("id", paramId)
+				.get()
+				.then()
+				.statusCode(200)
+				.extract().header("ETag")
+				// The ETag is padded with "<etag>"
+				.removeSurrounding("\"")
+		
+		if (ifMatch != null && ifMatch.trim() != etag){
+			return ResponseEntity.status(PRECONDITION_FAILED).body(
+					ResponseDto(
+							code = PRECONDITION_FAILED.value(),
+							message = "ERROR! If-Match flag in request header does not match tha latest etag."
+					).validated()
+			)
+		}
+		
 		
 		val id: Long
 		
