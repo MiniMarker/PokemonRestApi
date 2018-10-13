@@ -261,6 +261,9 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${version.springboot}</version>
+				<configuration>
+					<mainClass>no.cmarker.PokemonRestApi</mainClass>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>

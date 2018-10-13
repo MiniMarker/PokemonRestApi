@@ -224,4 +224,101 @@ class PokemonRestApiTest : TestBase() {
 				.statusCode(204)
 				.body("number", CoreMatchers.equalTo(updatedNumber))
 	}
+	
+	
+	
+	@Test
+	fun testEtag() {
+		assertResultSize(0);
+		
+		val etag = RestAssured.given().accept(ContentType.JSON)
+				.get()
+				.then()
+				.statusCode(200)
+				.header("ETag", CoreMatchers.notNullValue())
+				.extract().header("ETag")
+		
+		
+		RestAssured.given().accept(ContentType.JSON)
+				.header("If-None-Match", etag)
+				.get()
+				.then()
+				.statusCode(304)
+				.content(CoreMatchers.equalTo(""))
+	}
+	
+	@Test
+	fun testEtagAfterUpdate(){
+		
+		val number = 98
+		val name = "Owly"
+		val type = "Grass"
+		val imgUrl = "defaultUrl"
+		
+		val id = createPokemon(number, name, type, imgUrl)
+		
+		val etag = given().accept(ContentType.JSON)
+				.get()
+				.then()
+				.statusCode(200)
+				.header("ETag", CoreMatchers.notNullValue())
+				.extract().header("ETag")
+		
+		given().accept(ContentType.JSON)
+				.header("If-None-Match", etag)
+				.get()
+				.then()
+				.statusCode(304)
+				.content(CoreMatchers.equalTo(""))
+		
+		// Updating entitiy to change the generated ETag
+		val updatedEtag = given().contentType(ContentType.JSON)
+				.pathParam("id", id)
+				.body(PokemonDto(id, number, "updatedName", type, imgUrl))
+				.put("/id/{id}")
+		
+		given().accept(ContentType.JSON)
+				.header("If-None-Match", etag)
+				.get()
+				.then()
+				.statusCode(200)
+				.header("ETag", CoreMatchers.notNullValue())
+				.header("Etag", CoreMatchers.not(CoreMatchers.equalTo(etag)))
+		
+	}
+	
+	/*
+		HELPING METHODS!
+	 */
+	
+	fun createPokemon(number: Int, name: String, type: String, imgUrl: String): Long {
+		
+		val dto = PokemonDto(null, number, name, type, imgUrl)
+		
+		return RestAssured.given().contentType(ContentType.JSON)
+				.body(dto)        // send the DTO as POST req body
+				.post()
+				.then()
+				.statusCode(201)
+				.extract()
+				.jsonPath().getLong("page.data[0].id")
+	}
+	
+	fun createMultiple(n: Int) {
+		
+		val name = "defaultName"
+		val type = "defaultType"
+		val imgUrl = "defaultUrl"
+		
+		for (i in 1..n) {
+			createPokemon(i, name, type, imgUrl)
+		}
+		
+		RestAssured.given().get().then().extract().body().jsonPath().prettyPrint()
+		
+	}
+	
+	fun assertResultSize(size: Int){
+		RestAssured.given().get().then().statusCode(200).body("page.data.size()", CoreMatchers.equalTo(size))
+	}
 }

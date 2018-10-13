@@ -57,39 +57,4 @@ abstract class TestBase {
 				.statusCode(200)
 				.body("page.data.size()", CoreMatchers.equalTo(0))
 	}
-	
-	/*
-		HELPING METHODS!
-	 */
-	
-	fun createPokemon(number: Int, name: String, type: String, imgUrl: String): Long {
-		
-		val dto = PokemonDto(null, number, name, type, imgUrl)
-		
-		return RestAssured.given().contentType(ContentType.JSON)
-				.body(dto)        // send the DTO as POST req body
-				.post()
-				.then()
-				.statusCode(201)
-				.extract()
-				.jsonPath().getLong("page.data[0].id")
-	}
-	
-	fun createMultiple(n: Int) {
-		
-		val name = "defaultName"
-		val type = "defaultType"
-		val imgUrl = "defaultUrl"
-		
-		for (i in 1..n) {
-			createPokemon(i, name, type, imgUrl)
-		}
-		
-		RestAssured.given().get().then().extract().body().jsonPath().prettyPrint()
-		
-	}
-	
-	fun assertResultSize(size: Int){
-		RestAssured.given().get().then().statusCode(200).body("page.data.size()", CoreMatchers.equalTo(size))
-	}
 }
