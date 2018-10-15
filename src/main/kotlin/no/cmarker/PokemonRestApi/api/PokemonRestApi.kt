@@ -47,6 +47,9 @@ class PokemonRestApi {
 			@ApiParam("Type of the pokemons")
 			@RequestParam("type", required = false) paramType: String?,
 			//
+			@ApiParam("Name of the pokemons")
+			@RequestParam("name", required = false) paramName: String?,
+			//
 			@ApiParam("Offset in the list of news")
 			@RequestParam("offset", defaultValue = "0") offset: Int,
 			//
@@ -54,7 +57,7 @@ class PokemonRestApi {
 			@RequestParam("limit", defaultValue = "10") limit: Int
 	): ResponseEntity<WrappedResponse<PokemonDto>> {
 		
-		return service.get(paramId, paramType, offset, limit)
+		return service.get(paramId, paramType, paramName, offset, limit)
 		
 	}
 	

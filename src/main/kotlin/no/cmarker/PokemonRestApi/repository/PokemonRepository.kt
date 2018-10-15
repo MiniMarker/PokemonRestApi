@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository
 interface PokemonRepository : CrudRepository<PokemonEntity, Long>, PokemonRepositoryCustom {
 	
 	fun findAllByTypeIgnoreCase(type: String): List<PokemonEntity>
+	
+	fun findByNameIgnoreCase(type: String): List<PokemonEntity>
 }

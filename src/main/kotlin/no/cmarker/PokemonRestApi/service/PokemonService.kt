@@ -34,7 +34,7 @@ class PokemonService {
 	@Autowired
 	private lateinit var restTemplate: RestTemplate
 	
-	fun get(paramId: String?, paramType: String?, offset: Int, limit: Int) : ResponseEntity<WrappedResponse<PokemonDto>> {
+	fun get(paramId: String?, paramType: String?, paramName: String?, offset: Int, limit: Int) : ResponseEntity<WrappedResponse<PokemonDto>> {
 		
 		
 		if (offset < 0 || limit < 1) {
@@ -51,7 +51,7 @@ class PokemonService {
 		
 		// If no params are defined, return all data in database
 		// GET ALL
-		if (paramId.isNullOrBlank() && paramType.isNullOrBlank()) {
+		if (paramId.isNullOrBlank() && paramType.isNullOrBlank() && paramName.isNullOrBlank()) {
 			
 			pokemonResultList = DtoConverters.transform(repository.findAll())
 			
@@ -59,7 +59,7 @@ class PokemonService {
 		
 		// If only paramId is defined, get the pokemon with the given id
 		// GET BY ID
-		else if (!paramId.isNullOrBlank() && paramType.isNullOrBlank()) {
+		else if (!paramId.isNullOrBlank() && paramType.isNullOrBlank() && paramName.isNullOrBlank()) {
 			
 			val id = try {
 				// Here i try to parse the id given as String in the URL to a long value
@@ -88,6 +88,15 @@ class PokemonService {
 			pokemonResultList = listOf(DtoConverters.transform(entity))
 			
 			builder.queryParam("id", id)
+			
+		}
+		
+		// GET BY NAME
+		else if (paramId.isNullOrBlank() && paramType.isNullOrBlank() && !paramName.isNullOrBlank()) {
+			
+			pokemonResultList = DtoConverters.transform(repository.findByNameIgnoreCase(paramName!!))
+			
+			builder.queryParam("name", paramName)
 			
 		}
 		
@@ -445,7 +454,5 @@ class PokemonService {
 				).validated()
 		)
 	}
-	
-	
 	
 }

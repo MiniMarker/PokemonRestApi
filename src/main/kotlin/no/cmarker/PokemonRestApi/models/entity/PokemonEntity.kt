@@ -16,30 +16,30 @@ import javax.validation.constraints.Size
  * @author Christian Marker on 24/09/2018 at 11:02.
  */
 @Entity(name = "pokemons")
-class PokemonEntity (
-		
-		/*
-		*
-		* Elementcollection Set for arrays
-		*
-		* */
-		
-		@get:NotBlank
-		@get:Size(max = 124)
-		var imgUrl: String,
-		
-		@get:NotNull
-		@get:Max(999)
-		var number: Int,
-		
-		@get:NotBlank
-		@get:Size(max = 124)
-		var name: String,
-		
-		@get:NotBlank
-		var type: String,
-		
-		@get:Id
-		@get:GeneratedValue(strategy = GenerationType.IDENTITY)
-		var id: Long? = null
+class PokemonEntity(
+	
+	/*
+	*
+	* Elementcollection Set for arrays
+	*
+	* */
+	
+	@get:NotBlank
+	@get:Size(max = 124)
+	var imgUrl: String,
+	
+	@get:NotNull
+	@get:Max(999)
+	var number: Int,
+	
+	@get:NotBlank
+	@get:Size(max = 124)
+	var name: String,
+	
+	@get:NotBlank
+	var type: String,
+	
+	@get:Id
+	@get:GeneratedValue(strategy = GenerationType.IDENTITY)
+	var id: Long? = null
 )
